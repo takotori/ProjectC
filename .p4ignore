@@ -2,6 +2,9 @@ Binaries/
 Build/
 Intermediate/
 Saved/
+Plugins/Developer/
+Plugins/MultiplayerSessions/Binaries
+Plugins/MultiplayerSessions/Intermediate
 .vs/
 .idea/
 *.sln
