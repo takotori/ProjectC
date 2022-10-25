@@ -6,6 +6,7 @@
 #include "MannequinCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "ProjectC/Weapon/Weapon.h"
 
 void UMannequinAnimInstance::NativeInitializeAnimation()
 {
@@ -30,12 +31,13 @@ void UMannequinAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	bIsInAir = MannequinCharacter->GetCharacterMovement()->IsFalling();
 	bIsAccelerating = MannequinCharacter->GetCharacterMovement()->GetCurrentAcceleration().Size() > 0.f;
 	bWeaponEquipped = true;
+	EquippedWeapon = MannequinCharacter->GetEquippedWeapon();
 	bIsCrouched = MannequinCharacter->bIsCrouched;
 
 	// Offset Yaw for Strafing
-	FRotator AimRotation = MannequinCharacter->GetBaseAimRotation();
-	FRotator MovementRotation = UKismetMathLibrary::MakeRotFromX(MannequinCharacter->GetVelocity());
-	FRotator DeltaRot = UKismetMathLibrary::NormalizedDeltaRotator(MovementRotation, AimRotation);
+	const FRotator AimRotation = MannequinCharacter->GetBaseAimRotation();
+	const FRotator MovementRotation = UKismetMathLibrary::MakeRotFromX(MannequinCharacter->GetVelocity());
+	const FRotator DeltaRot = UKismetMathLibrary::NormalizedDeltaRotator(MovementRotation, AimRotation);
 	DeltaRotation = FMath::RInterpTo(DeltaRotation, DeltaRot, DeltaTime, 6.f);
 	YawOffset = DeltaRotation.Yaw;
 	
@@ -46,5 +48,18 @@ void UMannequinAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	const float Interp = FMath::FInterpTo(Lean, Target, DeltaTime, 6.f);
 	Lean = FMath::Clamp(Interp, -90.f, 90.f);
 
+	AO_Yaw = MannequinCharacter->GetAO_Yaw();
+	AO_Pitch = MannequinCharacter->GetAO_Pitch();
+
+	if (EquippedWeapon && EquippedWeapon->GetWeaponMesh() && MannequinCharacter->GetMesh())
+	{
+		LeftHandTransform = EquippedWeapon->GetWeaponMesh()->GetSocketTransform(FName("LeftHandSocket"), ERelativeTransformSpace::RTS_World);
+		FVector OutPosition;
+		FRotator OutRotation;
+		MannequinCharacter->GetMesh()->TransformToBoneSpace(FName("hand_r"), LeftHandTransform.GetLocation(), FRotator::ZeroRotator, OutPosition, OutRotation);
+		LeftHandTransform.SetLocation(OutPosition);
+		LeftHandTransform.SetRotation(FQuat(OutRotation));
+		
+	}
 	
 }

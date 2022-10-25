@@ -3,6 +3,7 @@
 #include "CombatComponent.h"
 
 #include "Engine/SkeletalMeshSocket.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "ProjectC/Character/MannequinCharacter.h"
 #include "ProjectC/Weapon/Weapon.h"
 
@@ -10,37 +11,34 @@ UCombatComponent::UCombatComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
 
-
 }
 
 
 void UCombatComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
-	// ...
-	
 }
-
 
 void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	// ...
 }
 
-void UCombatComponent::EquipWeapon()
+void UCombatComponent::SpawnWeaponOnCharacter()
 {
-	if (Character == nullptr) return;
+	if (Character == nullptr && !GetWorld()) return;
+	
+	EquippedWeapon = Cast<AWeapon>(GetWorld()->SpawnActor(WeaponToSpawn));
 
-	AWeapon* Weapon = GetWorld()->SpawnActor<AWeapon>();
-	
-	const USkeletalMeshSocket* HandSocket = Character->GetMesh()->GetSocketByName(FName("RightHandSocket"));
-	if (HandSocket)
+	if (EquippedWeapon)
 	{
-		HandSocket->AttachActor(Weapon, Character->GetMesh());
-	}
-	Weapon->SetOwner(Character);
-	
+		EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
+		
+		const USkeletalMeshSocket* HandSocket = Character->GetMesh()->GetSocketByName(FName("RightHandSocket"));
+		if (HandSocket)
+		{
+			HandSocket->AttachActor(EquippedWeapon, Character->GetMesh());
+		}
+		EquippedWeapon->SetOwner(Character);
+	}	
 }

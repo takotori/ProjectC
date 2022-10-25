@@ -14,15 +14,20 @@ class PROJECTC_API UCombatComponent : public UActorComponent
 
 public:	
 	UCombatComponent();
-	friend class AMannequinCharacter;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-	void EquipWeapon();
+	friend class AMannequinCharacter;
+	void SpawnWeaponOnCharacter();
 
 protected:
 	virtual void BeginPlay() override;
 
 private:
 	AMannequinCharacter* Character;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class AWeapon> WeaponToSpawn;
+
+	AWeapon* EquippedWeapon;
 
 public:	
 		

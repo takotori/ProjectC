@@ -29,6 +29,7 @@ protected:
 	void Turn(float Value);
 	void LookUp(float Value);
 	void CrouchButtonPressed();
+	void AimOffset(float DeltaTime);
 
 private:
 	UPROPERTY(VisibleAnywhere, Category=Camera)
@@ -43,5 +44,13 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess = "true"))
 	class AWeapon* Weapon;
 
+	float AO_Yaw;
+	float AO_Pitch;
 
+	FRotator StartingAimRotation;
+
+public:
+	AWeapon* GetEquippedWeapon();
+	FORCEINLINE float GetAO_Yaw() { return AO_Yaw; }
+	FORCEINLINE float GetAO_Pitch() { return AO_Pitch; }
 };
