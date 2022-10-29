@@ -3,7 +3,9 @@
 
 #include "Weapon.h"
 
+#include "Casing.h"
 #include "Components/SphereComponent.h"
+#include "Engine/SkeletalMeshSocket.h"
 
 // Sets default values
 AWeapon::AWeapon()
@@ -25,7 +27,6 @@ AWeapon::AWeapon()
 	AreaSphere->SetupAttachment(RootComponent);
 	AreaSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 	AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	
 }
 
 void AWeapon::BeginPlay()
@@ -43,14 +44,27 @@ void AWeapon::Fire(const FVector& HitTarget)
 	if (FireAnimation)
 	{
 		WeaponMesh->PlayAnimation(FireAnimation, false);
-	}	
+	}
+	if (CasingClass)
+	{
+		const USkeletalMeshSocket* AmmoEjectSocket = WeaponMesh->GetSocketByName(FName("AmmoEject"));
+		if (AmmoEjectSocket)
+		{
+			FTransform SocketTransform = AmmoEjectSocket->GetSocketTransform(WeaponMesh);
+			UWorld* World = GetWorld();
+			if (World)
+			{
+				World->SpawnActor<ACasing>(
+					CasingClass,
+					SocketTransform.GetLocation(),
+					SocketTransform.GetRotation().Rotator()
+				);
+			}
+		}
+	}
 }
 
 void AWeapon::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
-
-
-

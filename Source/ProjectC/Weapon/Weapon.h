@@ -41,6 +41,9 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Weapon Property")
 	class UAnimationAsset* FireAnimation;
 
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class ACasing> CasingClass;
+
 public:
 	FORCEINLINE void SetWeaponState(EWeaponState State) { WeaponState = State; }
 	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() const { return WeaponMesh; }
