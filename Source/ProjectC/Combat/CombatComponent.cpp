@@ -22,14 +22,26 @@ void UCombatComponent::BeginPlay()
 void UCombatComponent::FireButtonPressed(bool bPressed)
 {
 	bFireButtonpressed = bPressed;
+	if (bFireButtonpressed)
+	{
+		ServerFire();
+	}
+}
+
+void UCombatComponent::ServerFire_Implementation()
+{
+	MulticastFire();
+}
+
+void UCombatComponent::MulticastFire_Implementation()
+{
 	if (EquippedWeapon == nullptr) return;
 	
-	if (Character && bFireButtonpressed)
+	if (Character)
 	{
 		Character->PlayFireMontage();
 		EquippedWeapon->Fire();
 	}
-	
 }
 
 void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
