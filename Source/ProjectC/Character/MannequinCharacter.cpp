@@ -44,6 +44,8 @@ void AMannequinCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &AMannequinCharacter::CrouchButtonPressed);
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AMannequinCharacter::FireButtonPressed);
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AMannequinCharacter::FireButtonReleased);
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &AMannequinCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AMannequinCharacter::MoveRight);
@@ -57,6 +59,21 @@ void AMannequinCharacter::PostInitializeComponents()
 	if (Combat)
 	{
 		Combat->Character = this;
+	}
+}
+
+void AMannequinCharacter::PlayFireMontage()
+{
+	if (Combat == nullptr) return;
+
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+
+	if (AnimInstance && FireWeaponMontage)
+	{
+		AnimInstance->Montage_Play(FireWeaponMontage);
+		FName SectionName = FName("RifleHip");
+		AnimInstance->Montage_JumpToSection(SectionName);
+		
 	}
 }
 
@@ -125,6 +142,22 @@ void AMannequinCharacter::AimOffset(float DeltaTime)
 		FRotator BaseAimRotation = GetBaseAimRotation();
 		BaseAimRotation.Normalize();
 		AO_Pitch = BaseAimRotation.Pitch;
+	}
+}
+
+void AMannequinCharacter::FireButtonPressed()
+{
+	if (Combat)
+	{
+		Combat->FireButtonPressed(true);
+	}
+}
+
+void AMannequinCharacter::FireButtonReleased()
+{
+	if (Combat)
+	{
+		Combat->FireButtonPressed(false);
 	}
 }
 

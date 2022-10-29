@@ -12,16 +12,13 @@ class PROJECTC_API AMannequinCharacter : public ACharacter
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this character's properties
 	AMannequinCharacter();
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 	virtual void PostInitializeComponents() override;
+	void PlayFireMontage();
 
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 	void MoveForward(float Value);
@@ -30,6 +27,8 @@ protected:
 	void LookUp(float Value);
 	void CrouchButtonPressed();
 	void AimOffset(float DeltaTime);
+	void FireButtonPressed();
+	void FireButtonReleased();
 
 private:
 	UPROPERTY(VisibleAnywhere, Category=Camera)
@@ -48,6 +47,9 @@ private:
 	float AO_Pitch;
 
 	FRotator StartingAimRotation;
+
+	UPROPERTY(EditAnywhere, Category = Combat)
+	class UAnimMontage* FireWeaponMontage;
 
 public:
 	AWeapon* GetEquippedWeapon();

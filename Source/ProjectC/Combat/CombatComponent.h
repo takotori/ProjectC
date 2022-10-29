@@ -20,6 +20,8 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	void FireButtonPressed(bool bPressed);
+
 
 private:
 	AMannequinCharacter* Character;
@@ -28,6 +30,8 @@ private:
 	TSubclassOf<class AWeapon> WeaponToSpawn;
 
 	AWeapon* EquippedWeapon;
+
+	bool bFireButtonpressed;
 
 public:	
 		

@@ -19,6 +19,16 @@ void UCombatComponent::BeginPlay()
 	Super::BeginPlay();
 }
 
+void UCombatComponent::FireButtonPressed(bool bPressed)
+{
+	bFireButtonpressed = bPressed;
+	if (Character && bFireButtonpressed)
+	{
+		Character->PlayFireMontage();
+	}
+	
+}
+
 void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
