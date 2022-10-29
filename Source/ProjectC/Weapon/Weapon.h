@@ -19,10 +19,11 @@ UCLASS()
 class PROJECTC_API AWeapon : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	AWeapon();
 	virtual void Tick(float DeltaTime) override;
+	void Fire();
 
 protected:
 	virtual void BeginPlay() override;
@@ -36,6 +37,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	EWeaponState WeaponState;
+
+	UPROPERTY(EditAnywhere, Category = "Weapon Property")
+	class UAnimationAsset* FireAnimation;
 
 public:
 	FORCEINLINE void SetWeaponState(EWeaponState State) { WeaponState = State; }
