@@ -46,7 +46,7 @@ void AMannequinCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &AMannequinCharacter::CrouchButtonPressed);
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AMannequinCharacter::FireButtonPressed);
-	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AMannequinCharacter::FireButtonReleased);
+	PlayerInputComponent->BindAction("Fire", IE_Released, this, &AMannequinCharacter::FireButtonReleased);
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &AMannequinCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AMannequinCharacter::MoveRight);

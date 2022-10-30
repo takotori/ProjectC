@@ -4,9 +4,9 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "ProjectC/Character/MannequinCharacter.h"
-// #include "ProjectC/HUD/MannequinHUD.h"
 #include "ProjectC/PlayerController/MannequinPlayerController.h"
 #include "ProjectC/Weapon/Weapon.h"
+#include "TimerManager.h"
 
 UCombatComponent::UCombatComponent()
 {
@@ -32,6 +32,75 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	}
 }
 
+void UCombatComponent::FireButtonPressed(bool bPressed)
+{
+	bFireButtonPressed = bPressed;
+	if (bFireButtonPressed)
+	{
+		Fire();
+	}
+}
+
+void UCombatComponent::Fire()
+{
+	if (bCanFire)
+	{
+		bCanFire = false;
+		ServerFire(HitTarget);
+		StartFireTimer();
+	}
+}
+
+void UCombatComponent::StartFireTimer()
+{
+	if (EquippedWeapon == nullptr || Character == nullptr) return;
+	Character->GetWorldTimerManager().SetTimer(FireTimer, this, &UCombatComponent::FireTimerFinished, EquippedWeapon->FireDelay);
+}
+
+void UCombatComponent::FireTimerFinished()
+{
+	if (EquippedWeapon == nullptr) return;
+	bCanFire = true;
+	if (bFireButtonPressed && EquippedWeapon->bAutomatic)
+	{
+		Fire();
+	}
+}
+
+void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
+{
+	MulticastFire(TraceHitTarget);
+}
+
+void UCombatComponent::MulticastFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
+{
+	if (EquippedWeapon == nullptr) return;
+
+	if (Character)
+	{
+		Character->PlayFireMontage();
+		EquippedWeapon->Fire(TraceHitTarget);
+	}
+}
+
+void UCombatComponent::SpawnWeaponOnCharacter()
+{
+	if (Character == nullptr && !GetWorld()) return;
+
+	EquippedWeapon = Cast<AWeapon>(GetWorld()->SpawnActor(WeaponToSpawn));
+
+	if (EquippedWeapon)
+	{
+		EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
+
+		const USkeletalMeshSocket* HandSocket = Character->GetMesh()->GetSocketByName(FName("RightHandSocket"));
+		if (HandSocket)
+		{
+			HandSocket->AttachActor(EquippedWeapon, Character->GetMesh());
+		}
+		EquippedWeapon->SetOwner(Character);
+	}
+}
 
 void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
 {
@@ -55,7 +124,7 @@ void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
 			FVector Velocity = Character->GetVelocity();
 			Velocity.Z = 0.f;
 			CrosshairVelocityFactor = FMath::GetMappedRangeValueClamped(WalkSpeedRange, VelocityMultiplierRange,
-			                                                            Velocity.Size());
+																		Velocity.Size());
 
 			if (Character->GetCharacterMovement()->IsFalling())
 			{
@@ -69,17 +138,6 @@ void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
 			HUDPackage.CrosshairSpread = CrosshairVelocityFactor + CrosshairInAirFactor;
 			HUD->SetHUDPackage(HUDPackage);
 		}
-	}
-}
-
-void UCombatComponent::FireButtonPressed(bool bPressed)
-{
-	bFireButtonpressed = bPressed;
-	if (bFireButtonpressed)
-	{
-		FHitResult HitResult;
-		TraceUnderCrosshairs(HitResult);
-		ServerFire(HitResult.ImpactPoint);
 	}
 }
 
@@ -118,40 +176,5 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 		{
 			HUDPackage.CrosshairsColor = FLinearColor::White;
 		}
-	}
-}
-
-void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
-{
-	MulticastFire(TraceHitTarget);
-}
-
-void UCombatComponent::MulticastFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
-{
-	if (EquippedWeapon == nullptr) return;
-
-	if (Character)
-	{
-		Character->PlayFireMontage();
-		EquippedWeapon->Fire(TraceHitTarget);
-	}
-}
-
-void UCombatComponent::SpawnWeaponOnCharacter()
-{
-	if (Character == nullptr && !GetWorld()) return;
-
-	EquippedWeapon = Cast<AWeapon>(GetWorld()->SpawnActor(WeaponToSpawn));
-
-	if (EquippedWeapon)
-	{
-		EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
-
-		const USkeletalMeshSocket* HandSocket = Character->GetMesh()->GetSocketByName(FName("RightHandSocket"));
-		if (HandSocket)
-		{
-			HandSocket->AttachActor(EquippedWeapon, Character->GetMesh());
-		}
-		EquippedWeapon->SetOwner(Character);
 	}
 }

@@ -43,7 +43,7 @@ private:
 
 	AWeapon* EquippedWeapon;
 
-	bool bFireButtonpressed;
+	bool bFireButtonPressed;
 
 	// HUD and crosshairs
 	float CrosshairVelocityFactor;
@@ -51,4 +51,13 @@ private:
 
 	FVector HitTarget;
 	FHUDPackage HUDPackage;
+
+	FTimerHandle FireTimer;
+	
+	bool bCanFire = true;
+
+	void StartFireTimer();
+	
+	void FireTimerFinished();
+	void Fire();
 };
