@@ -47,4 +47,6 @@ private:
 	// HUD and crosshairs
 	float CrosshairVelocityFactor;
 	float CrosshairInAirFactor;
+
+	FVector HitTarget;
 };

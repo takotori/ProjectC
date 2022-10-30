@@ -167,6 +167,14 @@ AWeapon* AMannequinCharacter::GetEquippedWeapon()
 	return Combat->EquippedWeapon;
 }
 
+FVector AMannequinCharacter::GetHitTarget() const
+{
+	if (Combat == nullptr) return FVector();
+
+	return Combat->HitTarget;
+ 	
+}
+
 void AMannequinCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
