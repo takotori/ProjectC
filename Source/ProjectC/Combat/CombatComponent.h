@@ -43,4 +43,8 @@ private:
 	AWeapon* EquippedWeapon;
 
 	bool bFireButtonpressed;
+
+	// HUD and crosshairs
+	float CrosshairVelocityFactor;
+	float CrosshairInAirFactor;
 };

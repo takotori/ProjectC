@@ -8,4 +8,4 @@ Plugins/MultiplayerSessions/Intermediate
 .vs/
 .idea/
 *.sln
-*.user
+ProjectC.sln.DotSettings.user
