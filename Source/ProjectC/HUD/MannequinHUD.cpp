@@ -3,6 +3,9 @@
 
 #include "MannequinHUD.h"
 
+#include "CharacterOverlay.h"
+#include "Blueprint/UserWidget.h"
+
 void AMannequinHUD::DrawHUD()
 {
 	Super::DrawHUD();
@@ -41,6 +44,22 @@ void AMannequinHUD::DrawHUD()
 			FVector2d Spread(0.f, -SpreadScaled);
 			DrawCrosshair(HUDPackage.CrosshairsBottom, ViewportCenter, Spread, HUDPackage.CrosshairsColor);	
 		}
+	}
+}
+
+void AMannequinHUD::BeginPlay()
+{
+	Super::BeginPlay();
+	AddCharacterOverlay();
+}
+
+void AMannequinHUD::AddCharacterOverlay()
+{
+	APlayerController* PlayerController = GetOwningPlayerController();
+	if (PlayerController && CharacterOverlayClass)
+	{
+		CharacterOverlay = CreateWidget<UCharacterOverlay>(PlayerController, CharacterOverlayClass);
+		CharacterOverlay->AddToViewport();
 	}
 }
 

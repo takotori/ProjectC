@@ -4,8 +4,10 @@
 #include "Components/WidgetComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Net/UnrealNetwork.h"
 #include "ProjectC/ProjectC.h"
 #include "ProjectC/Combat/CombatComponent.h"
+#include "ProjectC/PlayerController/MannequinPlayerController.h"
 #include "ProjectC/Weapon/Weapon.h"
 
 AMannequinCharacter::AMannequinCharacter()
@@ -36,6 +38,11 @@ void AMannequinCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	Combat->SpawnWeaponOnCharacter();
+	MannequinPlayerController = Cast<AMannequinPlayerController>(Controller);
+	if (MannequinPlayerController)
+	{
+		MannequinPlayerController->SetHUDHealth(Health, MaxHealth);
+	}
 }
 
 
@@ -52,6 +59,13 @@ void AMannequinCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 	PlayerInputComponent->BindAxis("MoveRight", this, &AMannequinCharacter::MoveRight);
 	PlayerInputComponent->BindAxis("Turn", this, &AMannequinCharacter::Turn);
 	PlayerInputComponent->BindAxis("LookUp", this, &AMannequinCharacter::LookUp);
+}
+
+void AMannequinCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AMannequinCharacter, Health)
 }
 
 void AMannequinCharacter::PostInitializeComponents()
@@ -180,6 +194,11 @@ void AMannequinCharacter::FireButtonReleased()
 void AMannequinCharacter::MulticastHit_Implementation()
 {
 	PlayHitReactMontage();
+}
+
+void AMannequinCharacter::OnRep_Health()
+{
+	
 }
 
 AWeapon* AMannequinCharacter::GetEquippedWeapon()
