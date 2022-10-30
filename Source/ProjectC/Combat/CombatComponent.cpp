@@ -4,7 +4,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "ProjectC/Character/MannequinCharacter.h"
-#include "ProjectC/HUD/MannequinHUD.h"
+// #include "ProjectC/HUD/MannequinHUD.h"
 #include "ProjectC/PlayerController/MannequinPlayerController.h"
 #include "ProjectC/Weapon/Weapon.h"
 
@@ -43,7 +43,7 @@ void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
 		HUD = HUD == nullptr ? Cast<AMannequinHUD>(Controller->GetHUD()) : HUD;
 		if (HUD && EquippedWeapon)
 		{
-			FHUDPackage HUDPackage;
+			
 			HUDPackage.CrosshairsCenter = EquippedWeapon->CrosshairsCenter;
 			HUDPackage.CrosshairsLeft = EquippedWeapon->CrosshairsLeft;
 			HUDPackage.CrosshairsRight = EquippedWeapon->CrosshairsRight;
@@ -111,6 +111,14 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 			End,
 			ECollisionChannel::ECC_Visibility
 		);
+		if (TraceHitResult.GetActor() && TraceHitResult.GetActor()->Implements<UInteractWithCrosshairsInterface>())
+		{
+			HUDPackage.CrosshairsColor = FLinearColor::Red;
+		}
+		else
+		{
+			HUDPackage.CrosshairsColor = FLinearColor::White;
+		}
 	}
 }
 

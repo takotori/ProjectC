@@ -1,13 +1,12 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "ProjectC/Interfaces/InteractWithCrosshairsInterface.h"
 #include "MannequinCharacter.generated.h"
 
 UCLASS()
-class PROJECTC_API AMannequinCharacter : public ACharacter
+class PROJECTC_API AMannequinCharacter : public ACharacter, public IInteractWithCrosshairsInterface
 {
 	GENERATED_BODY()
 

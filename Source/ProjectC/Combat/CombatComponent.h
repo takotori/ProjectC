@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "ProjectC/HUD/MannequinHUD.h"
 #include "CombatComponent.generated.h"
 
 
@@ -49,4 +50,5 @@ private:
 	float CrosshairInAirFactor;
 
 	FVector HitTarget;
+	FHUDPackage HUDPackage;
 };
