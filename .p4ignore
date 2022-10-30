@@ -8,3 +8,4 @@ Plugins/MultiplayerSessions/Intermediate
 .vs/
 .idea/
 *.sln
+*.user

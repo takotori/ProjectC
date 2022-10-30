@@ -25,6 +25,23 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	virtual void Fire(const FVector& HitTarget);
 
+	// Texture for weapon crosshair
+	UPROPERTY(EditAnywhere, Category = Crosshairs)
+	class UTexture2D* CrosshairsCenter;
+
+	UPROPERTY(EditAnywhere, Category = Crosshairs)
+	UTexture2D* CrosshairsLeft;
+
+	UPROPERTY(EditAnywhere, Category = Crosshairs)
+	UTexture2D* CrosshairsRight;
+
+	UPROPERTY(EditAnywhere, Category = Crosshairs)
+	UTexture2D* CrosshairsTop;
+
+	UPROPERTY(EditAnywhere, Category = Crosshairs)
+	UTexture2D* CrosshairsBottom;
+
+
 protected:
 	virtual void BeginPlay() override;
 

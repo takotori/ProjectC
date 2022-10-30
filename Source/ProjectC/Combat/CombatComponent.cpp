@@ -4,6 +4,8 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "ProjectC/Character/MannequinCharacter.h"
+#include "ProjectC/HUD/MannequinHUD.h"
+#include "ProjectC/PlayerController/MannequinPlayerController.h"
 #include "ProjectC/Weapon/Weapon.h"
 
 UCombatComponent::UCombatComponent()
@@ -15,6 +17,35 @@ UCombatComponent::UCombatComponent()
 void UCombatComponent::BeginPlay()
 {
 	Super::BeginPlay();
+}
+
+void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType,
+									 FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	SetHUDCrosshairs(DeltaTime);
+}
+
+
+void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
+{
+	if (Character == nullptr && Character->Controller == nullptr) return;
+	Controller = Controller == nullptr ? Cast<AMannequinPlayerController>(Character->Controller) : Controller;
+
+	if (Controller)
+	{
+		HUD = HUD == nullptr ? Cast<AMannequinHUD>(Controller->GetHUD()) : HUD;
+		if (HUD && EquippedWeapon)
+		{
+			FHUDPackage HUDPackage;
+			HUDPackage.CrosshairsCenter = EquippedWeapon->CrosshairsCenter;
+			HUDPackage.CrosshairsLeft = EquippedWeapon->CrosshairsLeft;
+			HUDPackage.CrosshairsRight = EquippedWeapon->CrosshairsRight;
+			HUDPackage.CrosshairsTop = EquippedWeapon->CrosshairsTop;
+			HUDPackage.CrosshairsBottom = EquippedWeapon->CrosshairsBottom;
+			HUD->SetHUDPackage(HUDPackage);
+		}
+	}
 }
 
 void UCombatComponent::FireButtonPressed(bool bPressed)
@@ -72,12 +103,6 @@ void UCombatComponent::MulticastFire_Implementation(const FVector_NetQuantize& T
 		Character->PlayFireMontage();
 		EquippedWeapon->Fire(TraceHitTarget);
 	}
-}
-
-void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType,
-                                     FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
 void UCombatComponent::SpawnWeaponOnCharacter()

@@ -30,8 +30,12 @@ protected:
 
 	void TraceUnderCrosshairs(FHitResult& TraceHitResult);
 
+	void SetHUDCrosshairs(float DeltaTime);
+
 private:
 	AMannequinCharacter* Character;
+	class AMannequinPlayerController* Controller;
+	class AMannequinHUD* HUD;
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class AWeapon> WeaponToSpawn;
