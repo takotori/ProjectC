@@ -28,7 +28,7 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	{
 		FHitResult HitResult;
 		TraceUnderCrosshairs(HitResult);
-		HitTarget = HitResult.ImpactPoint;	
+		HitTarget = HitResult.ImpactPoint;
 	}
 }
 
@@ -43,7 +43,6 @@ void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
 		HUD = HUD == nullptr ? Cast<AMannequinHUD>(Controller->GetHUD()) : HUD;
 		if (HUD && EquippedWeapon)
 		{
-			
 			HUDPackage.CrosshairsCenter = EquippedWeapon->CrosshairsCenter;
 			HUDPackage.CrosshairsLeft = EquippedWeapon->CrosshairsLeft;
 			HUDPackage.CrosshairsRight = EquippedWeapon->CrosshairsRight;
@@ -60,13 +59,13 @@ void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
 
 			if (Character->GetCharacterMovement()->IsFalling())
 			{
-				CrosshairInAirFactor = FMath::FInterpTo(CrosshairInAirFactor, 2.25f, DeltaTime, 2.25f);	
+				CrosshairInAirFactor = FMath::FInterpTo(CrosshairInAirFactor, 2.25f, DeltaTime, 2.25f);
 			}
 			else
 			{
 				CrosshairInAirFactor = FMath::FInterpTo(CrosshairInAirFactor, 0.f, DeltaTime, 30.f);
 			}
-				
+
 			HUDPackage.CrosshairSpread = CrosshairVelocityFactor + CrosshairInAirFactor;
 			HUD->SetHUDPackage(HUDPackage);
 		}

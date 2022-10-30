@@ -4,6 +4,7 @@
 #include "Components/WidgetComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "ProjectC/ProjectC.h"
 #include "ProjectC/Combat/CombatComponent.h"
 #include "ProjectC/Weapon/Weapon.h"
 
@@ -17,14 +18,12 @@ AMannequinCharacter::AMannequinCharacter()
 	FollowCamera->SetRelativeRotation(FRotator(0, 90, -90));
 	FollowCamera->bUsePawnControlRotation = true;
 
-	OverheadWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("OverheadWidget"));
-	OverheadWidget->SetupAttachment(RootComponent);
-
 	Combat = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
 	Combat->SetIsReplicated(true);
 
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+	GetMesh()->SetCollisionObjectType(ECC_SkeletalMesh);
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
 
@@ -74,6 +73,21 @@ void AMannequinCharacter::PlayFireMontage()
 	{
 		AnimInstance->Montage_Play(FireWeaponMontage);
 		FName SectionName = FName("RifleHip");
+		AnimInstance->Montage_JumpToSection(SectionName);
+		
+	}
+}
+
+void AMannequinCharacter::PlayHitReactMontage()
+{
+	if (Combat == nullptr) return;
+
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+
+	if (AnimInstance && HitReactMontage)
+	{
+		AnimInstance->Montage_Play(HitReactMontage);
+		FName SectionName("FromFront");
 		AnimInstance->Montage_JumpToSection(SectionName);
 		
 	}
@@ -161,6 +175,11 @@ void AMannequinCharacter::FireButtonReleased()
 	{
 		Combat->FireButtonPressed(false);
 	}
+}
+
+void AMannequinCharacter::MulticastHit_Implementation()
+{
+	PlayHitReactMontage();
 }
 
 AWeapon* AMannequinCharacter::GetEquippedWeapon()

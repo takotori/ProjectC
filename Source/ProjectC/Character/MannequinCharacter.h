@@ -17,6 +17,9 @@ public:
 	virtual void PostInitializeComponents() override;
 	void PlayFireMontage();
 
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastHit();
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -28,13 +31,11 @@ protected:
 	void AimOffset(float DeltaTime);
 	void FireButtonPressed();
 	void FireButtonReleased();
+	void PlayHitReactMontage();
 
 private:
 	UPROPERTY(VisibleAnywhere, Category=Camera)
 	class UCameraComponent* FollowCamera;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess = "true"))
-	class UWidgetComponent* OverheadWidget;
 
 	UPROPERTY(VisibleAnywhere)
 	class UCombatComponent* Combat;
@@ -49,6 +50,9 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = Combat)
 	class UAnimMontage* FireWeaponMontage;
+
+	UPROPERTY(EditAnywhere, Category = Combat)
+	UAnimMontage* HitReactMontage;
 
 public:
 	AWeapon* GetEquippedWeapon();
