@@ -29,7 +29,6 @@ AMannequinCharacter::AMannequinCharacter()
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
 
-
 	NetUpdateFrequency = 66.f;
 	MinNetUpdateFrequency = 33.f;
 }
@@ -38,13 +37,12 @@ void AMannequinCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	Combat->SpawnWeaponOnCharacter();
-	MannequinPlayerController = Cast<AMannequinPlayerController>(Controller);
-	if (MannequinPlayerController)
+	UpdateHUDHealth();
+	if (HasAuthority())
 	{
-		MannequinPlayerController->SetHUDHealth(Health, MaxHealth);
+		OnTakeAnyDamage.AddDynamic(this, &AMannequinCharacter::ReceiveDamage);
 	}
 }
-
 
 void AMannequinCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -105,6 +103,14 @@ void AMannequinCharacter::PlayHitReactMontage()
 		AnimInstance->Montage_JumpToSection(SectionName);
 		
 	}
+}
+
+void AMannequinCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
+	AController* InstigatorController, AActor* DamageCauser)
+{
+	Health = FMath::Clamp(Health - Damage, 0.f, MaxHealth);
+	UpdateHUDHealth();
+	PlayHitReactMontage();
 }
 
 void AMannequinCharacter::MoveForward(float Value)
@@ -191,14 +197,19 @@ void AMannequinCharacter::FireButtonReleased()
 	}
 }
 
-void AMannequinCharacter::MulticastHit_Implementation()
+void AMannequinCharacter::OnRep_Health()
 {
+	UpdateHUDHealth();
 	PlayHitReactMontage();
 }
 
-void AMannequinCharacter::OnRep_Health()
+void AMannequinCharacter::UpdateHUDHealth()
 {
-	
+	MannequinPlayerController = MannequinPlayerController == nullptr ? Cast<AMannequinPlayerController>(Controller) : MannequinPlayerController;
+	if (MannequinPlayerController)
+	{
+		MannequinPlayerController->SetHUDHealth(Health, MaxHealth);
+	}
 }
 
 AWeapon* AMannequinCharacter::GetEquippedWeapon()
