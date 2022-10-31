@@ -7,6 +7,7 @@
 #include "Net/UnrealNetwork.h"
 #include "ProjectC/ProjectC.h"
 #include "ProjectC/Combat/CombatComponent.h"
+#include "ProjectC/GameMode/MatchGameMode.h"
 #include "ProjectC/PlayerController/MannequinPlayerController.h"
 #include "ProjectC/Weapon/Weapon.h"
 
@@ -86,8 +87,11 @@ void AMannequinCharacter::PlayFireMontage()
 		AnimInstance->Montage_Play(FireWeaponMontage);
 		FName SectionName = FName("RifleHip");
 		AnimInstance->Montage_JumpToSection(SectionName);
-		
 	}
+}
+
+void AMannequinCharacter::Elim()
+{
 }
 
 void AMannequinCharacter::PlayHitReactMontage()
@@ -101,16 +105,28 @@ void AMannequinCharacter::PlayHitReactMontage()
 		AnimInstance->Montage_Play(HitReactMontage);
 		FName SectionName("FromFront");
 		AnimInstance->Montage_JumpToSection(SectionName);
-		
 	}
 }
 
 void AMannequinCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
-	AController* InstigatorController, AActor* DamageCauser)
+                                        AController* InstigatorController, AActor* DamageCauser)
 {
 	Health = FMath::Clamp(Health - Damage, 0.f, MaxHealth);
 	UpdateHUDHealth();
 	PlayHitReactMontage();
+
+	if (Health == 0.f)
+	{
+		AMatchGameMode* MatchGameMode = GetWorld()->GetAuthGameMode<AMatchGameMode>();
+		if (MatchGameMode)
+		{
+			MannequinPlayerController = MannequinPlayerController == nullptr
+				                            ? Cast<AMannequinPlayerController>(Controller)
+				                            : MannequinPlayerController;
+			AMannequinPlayerController* AttackerController = Cast<AMannequinPlayerController>(InstigatorController);
+			MatchGameMode->PlayerEliminated(this, MannequinPlayerController, AttackerController);
+		}
+	}
 }
 
 void AMannequinCharacter::MoveForward(float Value)
@@ -151,7 +167,7 @@ void AMannequinCharacter::CrouchButtonPressed()
 void AMannequinCharacter::AimOffset(float DeltaTime)
 {
 	if (Combat && Combat->EquippedWeapon == nullptr) return;
-	
+
 	FVector Velocity = GetVelocity();
 	Velocity.Z = 0.f;
 	const float Speed = Velocity.Size();
@@ -205,7 +221,9 @@ void AMannequinCharacter::OnRep_Health()
 
 void AMannequinCharacter::UpdateHUDHealth()
 {
-	MannequinPlayerController = MannequinPlayerController == nullptr ? Cast<AMannequinPlayerController>(Controller) : MannequinPlayerController;
+	MannequinPlayerController = MannequinPlayerController == nullptr
+		                            ? Cast<AMannequinPlayerController>(Controller)
+		                            : MannequinPlayerController;
 	if (MannequinPlayerController)
 	{
 		MannequinPlayerController->SetHUDHealth(Health, MaxHealth);
@@ -223,7 +241,6 @@ FVector AMannequinCharacter::GetHitTarget() const
 	if (Combat == nullptr) return FVector();
 
 	return Combat->HitTarget;
- 	
 }
 
 void AMannequinCharacter::Tick(float DeltaTime)
