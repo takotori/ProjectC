@@ -90,8 +90,19 @@ void AMannequinCharacter::PlayFireMontage()
 	}
 }
 
-void AMannequinCharacter::Elim()
+void AMannequinCharacter::PlayElimMontage()
 {
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && ElimMontage)
+	{
+		AnimInstance->Montage_Play(ElimMontage);
+	}
+}
+
+void AMannequinCharacter::Elim_Implementation()
+{
+	bElimmed = true;
+	PlayElimMontage();
 }
 
 void AMannequinCharacter::PlayHitReactMontage()
@@ -100,7 +111,7 @@ void AMannequinCharacter::PlayHitReactMontage()
 
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 
-	if (AnimInstance && HitReactMontage)
+	if (AnimInstance && HitReactMontage && !AnimInstance->IsAnyMontagePlaying())
 	{
 		AnimInstance->Montage_Play(HitReactMontage);
 		FName SectionName("FromFront");
@@ -216,7 +227,10 @@ void AMannequinCharacter::FireButtonReleased()
 void AMannequinCharacter::OnRep_Health()
 {
 	UpdateHUDHealth();
-	PlayHitReactMontage();
+	if (!bElimmed)
+	{
+		PlayHitReactMontage();
+	}
 }
 
 void AMannequinCharacter::UpdateHUDHealth()

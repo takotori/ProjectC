@@ -33,6 +33,7 @@ void UMannequinAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	bWeaponEquipped = true;
 	EquippedWeapon = MannequinCharacter->GetEquippedWeapon();
 	bIsCrouched = MannequinCharacter->bIsCrouched;
+	bElimmed = MannequinCharacter->IsElimmed();
 
 	// Offset Yaw for Strafing
 	const FRotator AimRotation = MannequinCharacter->GetBaseAimRotation();

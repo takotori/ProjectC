@@ -17,6 +17,9 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void PostInitializeComponents() override;
 	void PlayFireMontage();
+	void PlayElimMontage();
+
+	UFUNCTION(NetMulticast, Reliable)
 	void Elim();
 
 protected:
@@ -31,9 +34,10 @@ protected:
 	void FireButtonPressed();
 	void FireButtonReleased();
 	void PlayHitReactMontage();
-	
+
 	UFUNCTION()
-	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* InstigatorController, AActor* DamageCauser);
+	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
+	                   class AController* InstigatorController, AActor* DamageCauser);
 	void UpdateHUDHealth();
 
 private:
@@ -57,6 +61,9 @@ private:
 	UPROPERTY(EditAnywhere, Category = Combat)
 	UAnimMontage* HitReactMontage;
 
+	UPROPERTY(EditAnywhere, Category = Combat)
+	UAnimMontage* ElimMontage;
+
 	// Player HP
 	UPROPERTY(EditAnywhere, Category = "Player Stats")
 	float MaxHealth = 100.f;
@@ -69,9 +76,12 @@ private:
 
 	class AMannequinPlayerController* MannequinPlayerController;
 
+	bool bElimmed = false;
+
 public:
 	AWeapon* GetEquippedWeapon();
 	FORCEINLINE float GetAO_Yaw() { return AO_Yaw; }
 	FORCEINLINE float GetAO_Pitch() { return AO_Pitch; }
 	FVector GetHitTarget() const;
+	FORCEINLINE bool IsElimmed() const { return bElimmed; }
 };
