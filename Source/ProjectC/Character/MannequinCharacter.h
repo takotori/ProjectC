@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Components/TimelineComponent.h"
 #include "GameFramework/Character.h"
 #include "ProjectC/Interfaces/InteractWithCrosshairsInterface.h"
 #include "MannequinCharacter.generated.h"
@@ -86,7 +87,33 @@ private:
 	
 	void ElimTimerFinished();
 
+	// Dissolve effect
+	UPROPERTY(VisibleAnywhere)
+	UTimelineComponent* DissolveTimeline;
+	
+	FOnTimelineFloat DissolveTrack;
 
+	UFUNCTION()
+	void UpdateDissolveMaterial(float DissolveValue);
+	void StartDissolve();
+	
+	UPROPERTY(EditAnywhere)
+	UCurveFloat* DissolveCurve;
+
+	// Dynamic instance that we can change at runtime
+	UPROPERTY(VisibleAnywhere, Category = Elim)
+	UMaterialInstanceDynamic* DynamicDissolveMaterialInstance1;
+
+	UPROPERTY(VisibleAnywhere, Category = Elim)
+	UMaterialInstanceDynamic* DynamicDissolveMaterialInstance2;
+
+	// Material instance set on the blueprint, used with the dynamic material instance
+	UPROPERTY(EditDefaultsOnly, Category = Elim)
+	UMaterialInstance* DissolveMaterialInstance1;
+	
+	UPROPERTY(EditDefaultsOnly, Category = Elim)
+	UMaterialInstance* DissolveMaterialInstance2;
+	
 public:
 	AWeapon* GetEquippedWeapon();
 	FORCEINLINE float GetAO_Yaw() { return AO_Yaw; }

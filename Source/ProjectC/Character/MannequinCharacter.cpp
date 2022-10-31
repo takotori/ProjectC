@@ -34,6 +34,8 @@ AMannequinCharacter::AMannequinCharacter()
 
 	NetUpdateFrequency = 66.f;
 	MinNetUpdateFrequency = 33.f;
+
+	DissolveTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("DissolveTimelineComponent"));
 }
 
 void AMannequinCharacter::BeginPlay()
@@ -116,6 +118,18 @@ void AMannequinCharacter::MulticastElim_Implementation()
 {
 	bElimmed = true;
 	PlayElimMontage();
+	if (DissolveMaterialInstance1 && DissolveMaterialInstance2)
+	{
+		DynamicDissolveMaterialInstance1 = UMaterialInstanceDynamic::Create(DissolveMaterialInstance1, this);
+		DynamicDissolveMaterialInstance2 = UMaterialInstanceDynamic::Create(DissolveMaterialInstance2, this);
+		GetMesh()->SetMaterial(0, DynamicDissolveMaterialInstance1);
+		GetMesh()->SetMaterial(1, DynamicDissolveMaterialInstance2);
+		DynamicDissolveMaterialInstance1->SetScalarParameterValue(TEXT("Dissolve"), 0.55f);
+		DynamicDissolveMaterialInstance1->SetScalarParameterValue(TEXT("Glow"), 200.f);
+		DynamicDissolveMaterialInstance2->SetScalarParameterValue(TEXT("Dissolve"), 0.55f);
+		DynamicDissolveMaterialInstance2->SetScalarParameterValue(TEXT("Glow"), 200.f);
+	}
+	StartDissolve();
 }
 
 void AMannequinCharacter::ElimTimerFinished()
@@ -263,6 +277,25 @@ void AMannequinCharacter::UpdateHUDHealth()
 	if (MannequinPlayerController)
 	{
 		MannequinPlayerController->SetHUDHealth(Health, MaxHealth);
+	}
+}
+
+void AMannequinCharacter::UpdateDissolveMaterial(float DissolveValue)
+{
+	if (DynamicDissolveMaterialInstance1 && DynamicDissolveMaterialInstance2)
+	{
+		DynamicDissolveMaterialInstance1->SetScalarParameterValue(TEXT("Dissolve"), DissolveValue);
+		DynamicDissolveMaterialInstance2->SetScalarParameterValue(TEXT("Dissolve"), DissolveValue);
+	}
+}
+
+void AMannequinCharacter::StartDissolve()
+{
+	DissolveTrack.BindDynamic(this, &AMannequinCharacter::UpdateDissolveMaterial);
+	if (DissolveCurve && DissolveTimeline)
+	{
+		DissolveTimeline->AddInterpFloat(DissolveCurve, DissolveTrack);
+		DissolveTimeline->Play();
 	}
 }
 
