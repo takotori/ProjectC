@@ -118,6 +118,8 @@ void AMannequinCharacter::MulticastElim_Implementation()
 {
 	bElimmed = true;
 	PlayElimMontage();
+	
+	// Start dissolve effect
 	if (DissolveMaterialInstance1 && DissolveMaterialInstance2)
 	{
 		DynamicDissolveMaterialInstance1 = UMaterialInstanceDynamic::Create(DissolveMaterialInstance1, this);
@@ -130,6 +132,18 @@ void AMannequinCharacter::MulticastElim_Implementation()
 		DynamicDissolveMaterialInstance2->SetScalarParameterValue(TEXT("Glow"), 200.f);
 	}
 	StartDissolve();
+
+	// Disable character movement
+	GetCharacterMovement()->DisableMovement();
+	GetCharacterMovement()->StopMovementImmediately();
+	if (MannequinPlayerController)
+	{
+		DisableInput(MannequinPlayerController);
+	}
+	// Disable collision
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GetEquippedWeapon()->Destroy();
 }
 
 void AMannequinCharacter::ElimTimerFinished()
