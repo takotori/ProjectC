@@ -13,4 +13,6 @@ public:
 	virtual void PlayerEliminated(class AMannequinCharacter* EliminatedCharacter,
 	                              class AMannequinPlayerController* VictimController,
 	                              AMannequinPlayerController* AttackerController);
+
+	virtual void RequestRespawn(class ACharacter* EliminatedCharacter, AController* EliminatedController);
 };

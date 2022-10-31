@@ -15,6 +15,8 @@ AMannequinCharacter::AMannequinCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
+	SpawnCollisionHandlingMethod = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+	
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(GetMesh(), "head");
 	FollowCamera->SetRelativeLocation(FVector(10, 20, 0));
@@ -99,10 +101,30 @@ void AMannequinCharacter::PlayElimMontage()
 	}
 }
 
-void AMannequinCharacter::Elim_Implementation()
+void AMannequinCharacter::Elim()
+{
+	MulticastElim();
+	GetWorldTimerManager().SetTimer(
+		ElimTimer,
+		this,
+		&AMannequinCharacter::ElimTimerFinished,
+		ElimDelay
+	);
+}
+
+void AMannequinCharacter::MulticastElim_Implementation()
 {
 	bElimmed = true;
 	PlayElimMontage();
+}
+
+void AMannequinCharacter::ElimTimerFinished()
+{
+	AMatchGameMode* MatchGameMode = GetWorld()->GetAuthGameMode<AMatchGameMode>();
+	if (MatchGameMode)
+	{
+		MatchGameMode->RequestRespawn(this, Controller);
+	}
 }
 
 void AMannequinCharacter::PlayHitReactMontage()
