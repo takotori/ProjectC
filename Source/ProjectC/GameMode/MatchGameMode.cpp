@@ -4,13 +4,29 @@
 #include "GameFramework/PlayerStart.h"
 #include "Kismet/GameplayStatics.h"
 #include "ProjectC/Character/MannequinCharacter.h"
+#include "ProjectC/PlayerController/MannequinPlayerController.h"
+#include "ProjectC/PlayerState/MannequinPlayerState.h"
 
 void AMatchGameMode::PlayerEliminated(AMannequinCharacter* EliminatedCharacter,
                                       AMannequinPlayerController* VictimController, AMannequinPlayerController* AttackerController)
 {
+	AMannequinPlayerState* AttackerPlayerState = AttackerController ? Cast<AMannequinPlayerState>(AttackerController->PlayerState) : nullptr;
+	AMannequinPlayerState* VictimPlayerState = VictimController ? Cast<AMannequinPlayerState>(VictimController->PlayerState) : nullptr;
+
+	if (AttackerPlayerState && AttackerPlayerState != VictimPlayerState)
+	{
+		AttackerPlayerState->AddToScore(1.f);
+	}
+
+	if (VictimPlayerState)
+	{
+		VictimPlayerState->AddToDefeats(1);
+	}
+	
 	if (EliminatedCharacter)
 	{
 		EliminatedCharacter->Elim();
+		
 	}
 }
 

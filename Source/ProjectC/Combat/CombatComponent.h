@@ -34,13 +34,19 @@ protected:
 	void SetHUDCrosshairs(float DeltaTime);
 
 private:
+	UPROPERTY()
 	AMannequinCharacter* Character;
+	
+	UPROPERTY()
 	class AMannequinPlayerController* Controller;
+	
+	UPROPERTY()
 	class AMannequinHUD* HUD;
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class AWeapon> WeaponToSpawn;
 
+	UPROPERTY()
 	AWeapon* EquippedWeapon;
 
 	bool bFireButtonPressed;

@@ -24,6 +24,8 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastElim();
 
+	
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -41,6 +43,8 @@ protected:
 	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
 	                   class AController* InstigatorController, AActor* DamageCauser);
 	void UpdateHUDHealth();
+	// Poll for any relevant classes and initialize HUD
+	void PollInit();
 
 private:
 	UPROPERTY(VisibleAnywhere, Category=Camera)
@@ -76,6 +80,7 @@ private:
 	UFUNCTION()
 	void OnRep_Health();
 
+	UPROPERTY()
 	class AMannequinPlayerController* MannequinPlayerController;
 
 	bool bElimmed = false;
@@ -113,6 +118,9 @@ private:
 	
 	UPROPERTY(EditDefaultsOnly, Category = Elim)
 	UMaterialInstance* DissolveMaterialInstance2;
+
+	UPROPERTY()
+	class AMannequinPlayerState* MannequinPlayerState;
 	
 public:
 	AWeapon* GetEquippedWeapon();

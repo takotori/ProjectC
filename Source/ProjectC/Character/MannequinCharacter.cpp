@@ -9,6 +9,7 @@
 #include "ProjectC/Combat/CombatComponent.h"
 #include "ProjectC/GameMode/MatchGameMode.h"
 #include "ProjectC/PlayerController/MannequinPlayerController.h"
+#include "ProjectC/PlayerState/MannequinPlayerState.h"
 #include "ProjectC/Weapon/Weapon.h"
 
 AMannequinCharacter::AMannequinCharacter()
@@ -294,6 +295,19 @@ void AMannequinCharacter::UpdateHUDHealth()
 	}
 }
 
+void AMannequinCharacter::PollInit()
+{
+	if (MannequinPlayerState == nullptr)
+	{
+		MannequinPlayerState = GetPlayerState<AMannequinPlayerState>();
+		if (MannequinPlayerState)
+		{
+			MannequinPlayerState->AddToScore(0.f);
+			MannequinPlayerState->AddToDefeats(0);
+		}
+	}
+}
+
 void AMannequinCharacter::UpdateDissolveMaterial(float DissolveValue)
 {
 	if (DynamicDissolveMaterialInstance1 && DynamicDissolveMaterialInstance2)
@@ -330,4 +344,5 @@ void AMannequinCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	AimOffset(DeltaTime);
+	PollInit();
 }
