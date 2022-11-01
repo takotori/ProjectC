@@ -76,7 +76,7 @@ void AWeapon::Fire(const FVector& HitTarget)
 
 void AWeapon::SpendRound()
 {
-	Ammo--;
+	Ammo = FMath::Clamp(Ammo - 1, 0, MagCapacity);
 	SetHUDAmmo();
 }
 
@@ -103,6 +103,12 @@ void AWeapon::SetHUDAmmo()
 		}
 	}
 }
+
+bool AWeapon::IsEmpty()
+{
+	return Ammo <= 0;
+}
+
 
 void AWeapon::Tick(float DeltaTime)
 {

@@ -66,4 +66,6 @@ private:
 	
 	void FireTimerFinished();
 	void Fire();
+
+	bool CanFire();
 };
