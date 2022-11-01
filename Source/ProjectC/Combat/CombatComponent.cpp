@@ -99,6 +99,7 @@ void UCombatComponent::SpawnWeaponOnCharacter()
 			HandSocket->AttachActor(EquippedWeapon, Character->GetMesh());
 		}
 		EquippedWeapon->SetOwner(Character);
+		EquippedWeapon->SetHUDAmmo();
 	}
 }
 

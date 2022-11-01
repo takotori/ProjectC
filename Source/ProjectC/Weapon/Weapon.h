@@ -23,6 +23,9 @@ class PROJECTC_API AWeapon : public AActor
 public:
 	AWeapon();
 	virtual void Tick(float DeltaTime) override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual void OnRep_Owner() override;
+	void SetHUDAmmo();
 	virtual void Fire(const FVector& HitTarget);
 
 	// Texture for weapon crosshair
@@ -53,6 +56,12 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
+	UPROPERTY()
+	class AMannequinCharacter* WeaponOwnerCharacter;
+
+	UPROPERTY()
+	class AMannequinPlayerController* WeaponOwnerController;
+	
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Property")
 	USkeletalMeshComponent* WeaponMesh;
 
@@ -67,6 +76,17 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class ACasing> CasingClass;
+
+	UPROPERTY(EditAnywhere, ReplicatedUsing = OnRep_Ammo)
+	int32 Ammo;
+
+	UFUNCTION()
+	void OnRep_Ammo();
+
+	void SpendRound();
+
+	UPROPERTY(EditAnywhere)
+	int32 MagCapacity;
 
 public:
 	FORCEINLINE void SetWeaponState(EWeaponState State) { WeaponState = State; }

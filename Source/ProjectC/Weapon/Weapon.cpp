@@ -6,6 +6,9 @@
 #include "Casing.h"
 #include "Components/SphereComponent.h"
 #include "Engine/SkeletalMeshSocket.h"
+#include "Net/UnrealNetwork.h"
+#include "ProjectC/Character/MannequinCharacter.h"
+#include "ProjectC/PlayerController/MannequinPlayerController.h"
 
 // Sets default values
 AWeapon::AWeapon()
@@ -39,6 +42,12 @@ void AWeapon::BeginPlay()
 	}
 }
 
+void AWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(AWeapon, Ammo);
+}
+
 void AWeapon::Fire(const FVector& HitTarget)
 {
 	if (FireAnimation)
@@ -60,6 +69,37 @@ void AWeapon::Fire(const FVector& HitTarget)
 					SocketTransform.GetRotation().Rotator()
 				);
 			}
+		}
+	}
+	SpendRound();
+}
+
+void AWeapon::SpendRound()
+{
+	Ammo--;
+	SetHUDAmmo();
+}
+
+void AWeapon::OnRep_Ammo()
+{
+	SetHUDAmmo();
+}
+
+void AWeapon::OnRep_Owner()
+{
+	Super::OnRep_Owner();
+	SetHUDAmmo();
+}
+
+void AWeapon::SetHUDAmmo()
+{
+	WeaponOwnerCharacter = WeaponOwnerCharacter == nullptr ? Cast<AMannequinCharacter>(GetOwner()) : WeaponOwnerCharacter;
+	if (WeaponOwnerCharacter)
+	{
+		WeaponOwnerController = WeaponOwnerController == nullptr ? Cast<AMannequinPlayerController>(WeaponOwnerCharacter->Controller) : WeaponOwnerController;
+		if (WeaponOwnerController)
+		{
+			WeaponOwnerController->SetHUDAmmo(Ammo);
 		}
 	}
 }
