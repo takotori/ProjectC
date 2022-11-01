@@ -5,6 +5,7 @@
 
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
+#include "ProjectC/Character/MannequinCharacter.h"
 #include "ProjectC/HUD/CharacterOverlay.h"
 #include "ProjectC/HUD/MannequinHUD.h"
 
@@ -24,4 +25,15 @@ void AMannequinPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 	MannequinHUD = Cast<AMannequinHUD>(GetHUD());
+}
+
+void AMannequinPlayerController::OnPossess(APawn* InPawn)
+{
+	Super::OnPossess(InPawn);
+	AMannequinCharacter* MannequinCharacter = Cast<AMannequinCharacter>(InPawn);
+
+	if (MannequinCharacter)
+	{
+		SetHUDHealth(MannequinCharacter->GetHealth(), MannequinCharacter->GetMaxHealth());
+	}
 }
