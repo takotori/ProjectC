@@ -67,4 +67,8 @@ private:
 
 	UPROPERTY(BlueprintReadOnly, Category = Character, meta=(AllowPrivateAccess = "true"))
 	bool bElimmed;
+	
+	UPROPERTY(BlueprintReadOnly, Category = Character, meta=(AllowPrivateAccess = "true"))
+	bool bUseFABRIK;
+	
 };

@@ -17,7 +17,7 @@ AMannequinCharacter::AMannequinCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 
 	SpawnCollisionHandlingMethod = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-	
+
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(GetMesh(), "head");
 	FollowCamera->SetRelativeLocation(FVector(10, 20, 0));
@@ -58,6 +58,7 @@ void AMannequinCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &AMannequinCharacter::CrouchButtonPressed);
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AMannequinCharacter::FireButtonPressed);
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &AMannequinCharacter::FireButtonReleased);
+	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &AMannequinCharacter::ReloadButtonPressed);
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &AMannequinCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AMannequinCharacter::MoveRight);
@@ -86,11 +87,33 @@ void AMannequinCharacter::PlayFireMontage()
 	if (Combat == nullptr) return;
 
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-
 	if (AnimInstance && FireWeaponMontage)
 	{
 		AnimInstance->Montage_Play(FireWeaponMontage);
 		FName SectionName = FName("RifleHip");
+		AnimInstance->Montage_JumpToSection(SectionName);
+	}
+}
+
+void AMannequinCharacter::PlayReloadMontage()
+{
+	if (Combat == nullptr) return;
+
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && ReloadMontage)
+	{
+		AnimInstance->Montage_Play(ReloadMontage);
+		FName SectionName;
+		switch (Combat->EquippedWeapon->GetWeaponType())
+		{
+		case EWeaponType::EWT_GrenadeLauncher:
+			SectionName = FName("GrenadeLauncher");
+			break;
+		case EWeaponType::EWT_MAX:
+			SectionName = FName("GrenadeLauncher");
+			break;
+		}
+
 		AnimInstance->Montage_JumpToSection(SectionName);
 	}
 }
@@ -119,7 +142,7 @@ void AMannequinCharacter::MulticastElim_Implementation()
 {
 	bElimmed = true;
 	PlayElimMontage();
-	
+
 	// Start dissolve effect
 	if (DissolveMaterialInstance1 && DissolveMaterialInstance2)
 	{
@@ -275,6 +298,14 @@ void AMannequinCharacter::FireButtonReleased()
 	}
 }
 
+void AMannequinCharacter::ReloadButtonPressed()
+{
+	if (Combat)
+	{
+		Combat->Reload();
+	}
+}
+
 void AMannequinCharacter::OnRep_Health()
 {
 	UpdateHUDHealth();
@@ -336,8 +367,13 @@ AWeapon* AMannequinCharacter::GetEquippedWeapon()
 FVector AMannequinCharacter::GetHitTarget() const
 {
 	if (Combat == nullptr) return FVector();
-
 	return Combat->HitTarget;
+}
+
+ECombatState AMannequinCharacter::GetCombatState() const
+{
+	if (Combat == nullptr) return ECombatState::ECS_MAX;
+	return Combat->CombatState;
 }
 
 void AMannequinCharacter::Tick(float DeltaTime)

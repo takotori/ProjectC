@@ -109,6 +109,11 @@ bool AWeapon::IsEmpty()
 	return Ammo <= 0;
 }
 
+void AWeapon::AddAmmo(int32 AmmoToAdd)
+{
+	Ammo = FMath::Clamp(Ammo - AmmoToAdd, 0, MagCapacity);
+	SetHUDAmmo();
+}
 
 void AWeapon::Tick(float DeltaTime)
 {

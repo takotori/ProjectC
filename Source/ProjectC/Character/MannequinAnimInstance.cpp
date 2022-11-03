@@ -12,7 +12,6 @@ void UMannequinAnimInstance::NativeInitializeAnimation()
 {
 	Super::NativeInitializeAnimation();
 	MannequinCharacter = Cast<AMannequinCharacter>(TryGetPawnOwner());
-	
 }
 
 void UMannequinAnimInstance::NativeUpdateAnimation(float DeltaTime)
@@ -70,5 +69,6 @@ void UMannequinAnimInstance::NativeUpdateAnimation(float DeltaTime)
 		}
 
 	}
+	bUseFABRIK = MannequinCharacter->GetCombatState() != ECombatState::ECS_Reloading;
 	
 }

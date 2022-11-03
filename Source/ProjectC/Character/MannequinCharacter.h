@@ -4,6 +4,7 @@
 #include "Components/TimelineComponent.h"
 #include "GameFramework/Character.h"
 #include "ProjectC/Interfaces/InteractWithCrosshairsInterface.h"
+#include "ProjectC/Types/CombatState.h"
 #include "MannequinCharacter.generated.h"
 
 UCLASS()
@@ -18,13 +19,12 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void PostInitializeComponents() override;
 	void PlayFireMontage();
+	void PlayReloadMontage();
 	void PlayElimMontage();
 	void Elim();
 
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastElim();
-
-	
 
 protected:
 	virtual void BeginPlay() override;
@@ -37,6 +37,7 @@ protected:
 	void AimOffset(float DeltaTime);
 	void FireButtonPressed();
 	void FireButtonReleased();
+	void ReloadButtonPressed();
 	void PlayHitReactMontage();
 
 	UFUNCTION()
@@ -50,7 +51,7 @@ private:
 	UPROPERTY(VisibleAnywhere, Category=Camera)
 	class UCameraComponent* FollowCamera;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess = "true"))
 	class UCombatComponent* Combat;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess = "true"))
@@ -63,6 +64,9 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = Combat)
 	class UAnimMontage* FireWeaponMontage;
+
+	UPROPERTY(EditAnywhere, Category = Combat)
+	UAnimMontage* ReloadMontage;
 
 	UPROPERTY(EditAnywhere, Category = Combat)
 	UAnimMontage* HitReactMontage;
@@ -130,4 +134,5 @@ public:
 	FORCEINLINE bool IsElimmed() const { return bElimmed; }
 	FORCEINLINE float GetHealth() const { return Health; }
 	FORCEINLINE float GetMaxHealth() const { return MaxHealth; }
+	ECombatState GetCombatState() const;
 };
