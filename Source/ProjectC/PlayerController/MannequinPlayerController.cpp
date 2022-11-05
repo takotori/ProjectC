@@ -1,10 +1,9 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "MannequinPlayerController.h"
 
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
+#include "GameFramework/GameMode.h"
+#include "Net/UnrealNetwork.h"
 #include "ProjectC/Character/MannequinCharacter.h"
 #include "ProjectC/HUD/CharacterOverlay.h"
 #include "ProjectC/HUD/MannequinHUD.h"
@@ -20,6 +19,30 @@ void AMannequinPlayerController::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 	SetHUDTime();
 	CheckTimeSync(DeltaSeconds);
+	PollInit();
+}
+
+void AMannequinPlayerController::PollInit()
+{
+	if (CharacterOverlay == nullptr)
+	{
+		if (MannequinHUD && MannequinHUD->CharacterOverlay)
+		{
+			CharacterOverlay = MannequinHUD->CharacterOverlay;
+			if (CharacterOverlay)
+			{
+				SetHUDHealth(HUDHealth, HUDMaxHealth);
+				SetHUDScore(HUDScore);
+				SetHUDDefeats(HUDDefeats);
+			}
+		}
+	}
+}
+
+void AMannequinPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(AMannequinPlayerController, MatchState)
 }
 
 void AMannequinPlayerController::CheckTimeSync(float DeltaSeconds)
@@ -54,6 +77,12 @@ void AMannequinPlayerController::SetHUDHealth(float Health, float MaxHealth)
 		FString HealthText = FString::Printf(TEXT("%d/%d"), FMath::CeilToInt(Health), FMath::CeilToInt(MaxHealth));
 		MannequinHUD->CharacterOverlay->HealthText->SetText(FText::FromString(HealthText));
 	}
+	else
+	{
+		bInitializeCharacterOverlay = true;
+		HUDHealth = Health;
+		HUDMaxHealth = MaxHealth;
+	}
 }
 
 void AMannequinPlayerController::SetHUDScore(float Score)
@@ -64,6 +93,11 @@ void AMannequinPlayerController::SetHUDScore(float Score)
 		FString ScoreText = FString::Printf(TEXT("%d"), FMath::FloorToInt(Score));
 		MannequinHUD->CharacterOverlay->ScoreAmount->SetText(FText::FromString(ScoreText));
 	}
+	else
+	{
+		bInitializeCharacterOverlay = true;
+		HUDScore = Score;
+	}
 }
 
 void AMannequinPlayerController::SetHUDDefeats(int32 Defeats)
@@ -73,6 +107,11 @@ void AMannequinPlayerController::SetHUDDefeats(int32 Defeats)
 	{
 		FString DefeatsText = FString::Printf(TEXT("%d"), Defeats);
 		MannequinHUD->CharacterOverlay->DefeatsAmount->SetText(FText::FromString(DefeatsText));
+	}
+	else
+	{
+		bInitializeCharacterOverlay = true;
+		HUDDefeats = Defeats;
 	}
 }
 
@@ -114,7 +153,8 @@ void AMannequinPlayerController::ServerRequestServerTime_Implementation(float Ti
 	ClientReportServerTime(TimeOfClientRequest, ServerTimeOfReceipt);
 }
 
-void AMannequinPlayerController::ClientReportServerTime_Implementation(float TimeOfClientRequest, float TimeServerReceivedClientRequest)
+void AMannequinPlayerController::ClientReportServerTime_Implementation(float TimeOfClientRequest,
+                                                                       float TimeServerReceivedClientRequest)
 {
 	float RoundTripTime = GetWorld()->GetTimeSeconds() - TimeOfClientRequest;
 	float CurrentServerTime = TimeServerReceivedClientRequest + (0.5f * RoundTripTime);
@@ -133,5 +173,30 @@ void AMannequinPlayerController::ReceivedPlayer()
 	if (IsLocalController())
 	{
 		ServerRequestServerTime(GetWorld()->GetTimeSeconds());
+	}
+}
+
+void AMannequinPlayerController::OnMatchStateSet(FName State)
+{
+	MatchState = State;
+	if (MatchState == MatchState::InProgress)
+	{
+		MannequinHUD = MannequinHUD == nullptr ? Cast<AMannequinHUD>(GetHUD()) : MannequinHUD;
+		if (MannequinHUD)
+		{
+			MannequinHUD->AddCharacterOverlay();
+		}
+	}
+}
+
+void AMannequinPlayerController::OnRep_MatchState()
+{
+	if (MatchState == MatchState::InProgress)
+	{
+		MannequinHUD = MannequinHUD == nullptr ? Cast<AMannequinHUD>(GetHUD()) : MannequinHUD;
+		if (MannequinHUD)
+		{
+			MannequinHUD->AddCharacterOverlay();
+		}
 	}
 }

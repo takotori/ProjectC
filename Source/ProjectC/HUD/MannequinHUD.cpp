@@ -50,7 +50,6 @@ void AMannequinHUD::DrawHUD()
 void AMannequinHUD::BeginPlay()
 {
 	Super::BeginPlay();
-	AddCharacterOverlay();
 }
 
 void AMannequinHUD::AddCharacterOverlay()
