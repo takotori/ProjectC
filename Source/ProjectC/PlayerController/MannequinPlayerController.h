@@ -46,6 +46,8 @@ protected:
 	float TimeSyncFrequency = 5.f;
 
 	float TimeSyncRunningTime = 0.f;
+
+	void HandleMatchHasStarted();
 	
 private:
 	UPROPERTY()

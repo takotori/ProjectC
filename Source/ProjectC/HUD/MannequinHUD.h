@@ -33,12 +33,19 @@ class PROJECTC_API AMannequinHUD : public AHUD
 public:
 	virtual void DrawHUD() override;
 	void AddCharacterOverlay();
+	void AddAnnouncement();
 
 	UPROPERTY(EditAnywhere, Category = "Player Stats")
 	TSubclassOf<class UUserWidget> CharacterOverlayClass;
 
+	UPROPERTY(EditAnywhere, Category = "Announcement")
+	TSubclassOf<class UUserWidget> AnnouncementClass;
+
 	UPROPERTY()
 	class UCharacterOverlay* CharacterOverlay;
+
+	UPROPERTY()
+	class UAnnouncement* Announcement;
 
 protected:
 	virtual void BeginPlay() override;

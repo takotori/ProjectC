@@ -5,6 +5,7 @@
 #include "GameFramework/GameMode.h"
 #include "Net/UnrealNetwork.h"
 #include "ProjectC/Character/MannequinCharacter.h"
+#include "ProjectC/HUD/Announcement.h"
 #include "ProjectC/HUD/CharacterOverlay.h"
 #include "ProjectC/HUD/MannequinHUD.h"
 
@@ -12,6 +13,10 @@ void AMannequinPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 	MannequinHUD = Cast<AMannequinHUD>(GetHUD());
+	if (MannequinHUD)
+	{
+		MannequinHUD->AddAnnouncement();
+	}
 }
 
 void AMannequinPlayerController::Tick(float DeltaSeconds)
@@ -181,11 +186,7 @@ void AMannequinPlayerController::OnMatchStateSet(FName State)
 	MatchState = State;
 	if (MatchState == MatchState::InProgress)
 	{
-		MannequinHUD = MannequinHUD == nullptr ? Cast<AMannequinHUD>(GetHUD()) : MannequinHUD;
-		if (MannequinHUD)
-		{
-			MannequinHUD->AddCharacterOverlay();
-		}
+		HandleMatchHasStarted();
 	}
 }
 
@@ -193,10 +194,19 @@ void AMannequinPlayerController::OnRep_MatchState()
 {
 	if (MatchState == MatchState::InProgress)
 	{
-		MannequinHUD = MannequinHUD == nullptr ? Cast<AMannequinHUD>(GetHUD()) : MannequinHUD;
-		if (MannequinHUD)
+		HandleMatchHasStarted();
+	}
+}
+
+void AMannequinPlayerController::HandleMatchHasStarted()
+{
+	MannequinHUD = MannequinHUD == nullptr ? Cast<AMannequinHUD>(GetHUD()) : MannequinHUD;
+	if (MannequinHUD)
+	{
+		MannequinHUD->AddCharacterOverlay();
+		if (MannequinHUD->Announcement)
 		{
-			MannequinHUD->AddCharacterOverlay();
+			MannequinHUD->Announcement->SetVisibility(ESlateVisibility::Hidden);
 		}
 	}
 }

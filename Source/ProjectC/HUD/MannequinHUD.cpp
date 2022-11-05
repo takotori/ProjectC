@@ -3,8 +3,34 @@
 
 #include "MannequinHUD.h"
 
+#include "Announcement.h"
 #include "CharacterOverlay.h"
 #include "Blueprint/UserWidget.h"
+
+void AMannequinHUD::BeginPlay()
+{
+	Super::BeginPlay();
+}
+
+void AMannequinHUD::AddCharacterOverlay()
+{
+	APlayerController* PlayerController = GetOwningPlayerController();
+	if (PlayerController && CharacterOverlayClass)
+	{
+		CharacterOverlay = CreateWidget<UCharacterOverlay>(PlayerController, CharacterOverlayClass);
+		CharacterOverlay->AddToViewport();
+	}
+}
+
+void AMannequinHUD::AddAnnouncement()
+{
+	APlayerController* PlayerController = GetOwningPlayerController();
+	if (PlayerController && AnnouncementClass)
+	{
+		Announcement = CreateWidget<UAnnouncement>(PlayerController, AnnouncementClass);
+		Announcement->AddToViewport();
+	}
+}
 
 void AMannequinHUD::DrawHUD()
 {
@@ -44,21 +70,6 @@ void AMannequinHUD::DrawHUD()
 			FVector2d Spread(0.f, -SpreadScaled);
 			DrawCrosshair(HUDPackage.CrosshairsBottom, ViewportCenter, Spread, HUDPackage.CrosshairsColor);	
 		}
-	}
-}
-
-void AMannequinHUD::BeginPlay()
-{
-	Super::BeginPlay();
-}
-
-void AMannequinHUD::AddCharacterOverlay()
-{
-	APlayerController* PlayerController = GetOwningPlayerController();
-	if (PlayerController && CharacterOverlayClass)
-	{
-		CharacterOverlay = CreateWidget<UCharacterOverlay>(PlayerController, CharacterOverlayClass);
-		CharacterOverlay->AddToViewport();
 	}
 }
 
