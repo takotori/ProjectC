@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Weapon.h"
+#include "Sound/SoundCue.h"
 #include "HitScanWeapon.generated.h"
 
 UCLASS()
@@ -21,4 +22,13 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	UParticleSystem* BeamParticles;
+
+	UPROPERTY(EditAnywhere)
+	UParticleSystem* MuzzleFlash;
+
+	UPROPERTY(EditAnywhere)
+	USoundCue* FireSound;
+
+	UPROPERTY(EditAnywhere)
+	USoundCue* HitSound;
 };
