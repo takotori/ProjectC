@@ -4,6 +4,11 @@
 #include "GameFramework/GameMode.h"
 #include "MatchGameMode.generated.h"
 
+namespace MatchState
+{
+	extern PROJECTC_API const FName Cooldown; // Match duration has been reached. Display winner and begin cooldown timer
+}
+
 UCLASS()
 class PROJECTC_API AMatchGameMode : public AGameMode
 {
@@ -23,6 +28,9 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly)
 	float WarmUpTime = 10.f;
+
+	UPROPERTY(EditDefaultsOnly)
+	float CooldownTime = 10.f;
 
 	float LevelStartingTime = 0.f;
 

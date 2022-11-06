@@ -163,11 +163,12 @@ void AMannequinPlayerController::SetHUDTime()
 			LevelStartingTime = MatchGameMode->LevelStartingTime;
 		}
 	}
-	
+
 	float TimeLeft = 0.f;
 	if (MatchState == MatchState::WaitingToStart) TimeLeft = WarmupTime - GetServerTime() + LevelStartingTime;
-	else if (MatchState == MatchState::WaitingToStart) TimeLeft = WarmupTime + MatchTime - GetServerTime() + LevelStartingTime;
-	
+	else if (MatchState == MatchState::InProgress) TimeLeft = WarmupTime + MatchTime - GetServerTime() +
+		LevelStartingTime;
+
 	uint32 SecondsLeft = FMath::CeilToInt(TimeLeft);
 	if (CountdownInt != SecondsLeft)
 	{
@@ -177,7 +178,7 @@ void AMannequinPlayerController::SetHUDTime()
 		}
 		if (MatchState == MatchState::InProgress)
 		{
-			SetHUDMatchCountdown(TimeLeft);	
+			SetHUDMatchCountdown(TimeLeft);
 		}
 	}
 	CountdownInt = SecondsLeft;
@@ -219,6 +220,10 @@ void AMannequinPlayerController::OnMatchStateSet(FName State)
 	{
 		HandleMatchHasStarted();
 	}
+	else if (MatchState == MatchState::Cooldown)
+	{
+		HandleCooldown();
+	}
 }
 
 void AMannequinPlayerController::OnRep_MatchState()
@@ -226,6 +231,10 @@ void AMannequinPlayerController::OnRep_MatchState()
 	if (MatchState == MatchState::InProgress)
 	{
 		HandleMatchHasStarted();
+	}
+	else if (MatchState == MatchState::Cooldown)
+	{
+		HandleCooldown();
 	}
 }
 
@@ -238,6 +247,19 @@ void AMannequinPlayerController::HandleMatchHasStarted()
 		if (MannequinHUD->Announcement)
 		{
 			MannequinHUD->Announcement->SetVisibility(ESlateVisibility::Hidden);
+		}
+	}
+}
+
+void AMannequinPlayerController::HandleCooldown()
+{
+	MannequinHUD = MannequinHUD == nullptr ? Cast<AMannequinHUD>(GetHUD()) : MannequinHUD;
+	if (MannequinHUD)
+	{
+		MannequinHUD->CharacterOverlay->RemoveFromParent();
+		if (MannequinHUD->Announcement)
+		{
+			MannequinHUD->Announcement->SetVisibility(ESlateVisibility::Visible);
 		}
 	}
 }
@@ -259,7 +281,8 @@ void AMannequinPlayerController::ServerCheckMatchState_Implementation()
 	}
 }
 
-void AMannequinPlayerController::ClientJoinMidGame_Implementation(FName StateOfMatch, float Warmup, float Match, float StartingTime)
+void AMannequinPlayerController::ClientJoinMidGame_Implementation(FName StateOfMatch, float Warmup, float Match,
+                                                                  float StartingTime)
 {
 	WarmupTime = Warmup;
 	MatchTime = Match;

@@ -49,6 +49,7 @@ protected:
 	float TimeSyncRunningTime = 0.f;
 
 	void HandleMatchHasStarted();
+	void HandleCooldown();
 
 	UFUNCTION(Server, Reliable)
 	void ServerCheckMatchState();
