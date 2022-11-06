@@ -18,7 +18,9 @@ public:
 
 	virtual void RequestRespawn(class ACharacter* EliminatedCharacter, AController* EliminatedController);
 	
-
+	UPROPERTY(EditDefaultsOnly)
+	float MatchTime = 120.f;
+	
 	UPROPERTY(EditDefaultsOnly)
 	float WarmUpTime = 10.f;
 

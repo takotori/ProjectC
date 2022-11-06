@@ -3,8 +3,10 @@
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
 #include "GameFramework/GameMode.h"
+#include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 #include "ProjectC/Character/MannequinCharacter.h"
+#include "ProjectC/GameMode/MatchGameMode.h"
 #include "ProjectC/HUD/Announcement.h"
 #include "ProjectC/HUD/CharacterOverlay.h"
 #include "ProjectC/HUD/MannequinHUD.h"
@@ -13,10 +15,7 @@ void AMannequinPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 	MannequinHUD = Cast<AMannequinHUD>(GetHUD());
-	if (MannequinHUD)
-	{
-		MannequinHUD->AddAnnouncement();
-	}
+	ServerCheckMatchState();
 }
 
 void AMannequinPlayerController::Tick(float DeltaSeconds)
@@ -142,12 +141,44 @@ void AMannequinPlayerController::SetHUDMatchCountdown(float CountdownTime)
 	}
 }
 
+void AMannequinPlayerController::SetHUDAnnouncementCountdown(float CountdownTime)
+{
+	MannequinHUD = MannequinHUD == nullptr ? Cast<AMannequinHUD>(GetHUD()) : MannequinHUD;
+	if (MannequinHUD && MannequinHUD->Announcement && MannequinHUD->Announcement->WarmupTime)
+	{
+		int32 Minutes = FMath::FloorToInt(CountdownTime / 60);
+		int32 Seconds = CountdownTime - Minutes * 60;
+		FString CountdownText = FString::Printf(TEXT("%02d:%02d"), Minutes, Seconds);
+		MannequinHUD->Announcement->WarmupTime->SetText(FText::FromString(CountdownText));
+	}
+}
+
 void AMannequinPlayerController::SetHUDTime()
 {
-	uint32 SecondsLeft = FMath::CeilToInt(MatchTime - GetServerTime());
+	if (HasAuthority())
+	{
+		AMatchGameMode* MatchGameMode = Cast<AMatchGameMode>(UGameplayStatics::GetGameMode(this));
+		if (MatchGameMode)
+		{
+			LevelStartingTime = MatchGameMode->LevelStartingTime;
+		}
+	}
+	
+	float TimeLeft = 0.f;
+	if (MatchState == MatchState::WaitingToStart) TimeLeft = WarmupTime - GetServerTime() + LevelStartingTime;
+	else if (MatchState == MatchState::WaitingToStart) TimeLeft = WarmupTime + MatchTime - GetServerTime() + LevelStartingTime;
+	
+	uint32 SecondsLeft = FMath::CeilToInt(TimeLeft);
 	if (CountdownInt != SecondsLeft)
 	{
-		SetHUDMatchCountdown(MatchTime - GetServerTime());
+		if (MatchState == MatchState::WaitingToStart)
+		{
+			SetHUDAnnouncementCountdown(TimeLeft);
+		}
+		if (MatchState == MatchState::InProgress)
+		{
+			SetHUDMatchCountdown(TimeLeft);	
+		}
 	}
 	CountdownInt = SecondsLeft;
 }
@@ -208,5 +239,35 @@ void AMannequinPlayerController::HandleMatchHasStarted()
 		{
 			MannequinHUD->Announcement->SetVisibility(ESlateVisibility::Hidden);
 		}
+	}
+}
+
+void AMannequinPlayerController::ServerCheckMatchState_Implementation()
+{
+	AMatchGameMode* GameMode = Cast<AMatchGameMode>(UGameplayStatics::GetGameMode(this));
+	if (GameMode)
+	{
+		WarmupTime = GameMode->WarmUpTime;
+		MatchTime = GameMode->MatchTime;
+		LevelStartingTime = GameMode->LevelStartingTime;
+		MatchState = GameMode->GetMatchState();
+		ClientJoinMidGame(MatchState, WarmupTime, MatchTime, LevelStartingTime);
+		if (MannequinHUD && MatchState == MatchState::WaitingToStart)
+		{
+			MannequinHUD->AddAnnouncement();
+		}
+	}
+}
+
+void AMannequinPlayerController::ClientJoinMidGame_Implementation(FName StateOfMatch, float Warmup, float Match, float StartingTime)
+{
+	WarmupTime = Warmup;
+	MatchTime = Match;
+	LevelStartingTime = StartingTime;
+	MatchState = StateOfMatch;
+	OnMatchStateSet(MatchState);
+	if (MannequinHUD && MatchState == MatchState::WaitingToStart)
+	{
+		MannequinHUD->AddAnnouncement();
 	}
 }
