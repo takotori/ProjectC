@@ -31,10 +31,6 @@ public:
 	FLinearColor CrosshairsColor;
 };
 
-
-/**
- * 
- */
 UCLASS()
 class PROJECTC_API AMannequinHUD : public AHUD
 {

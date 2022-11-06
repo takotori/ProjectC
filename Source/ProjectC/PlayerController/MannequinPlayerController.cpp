@@ -246,7 +246,7 @@ void AMannequinPlayerController::HandleMatchHasStarted()
 	MannequinHUD = MannequinHUD == nullptr ? Cast<AMannequinHUD>(GetHUD()) : MannequinHUD;
 	if (MannequinHUD)
 	{
-		MannequinHUD->AddCharacterOverlay();
+		if (MannequinHUD->CharacterOverlay == nullptr) MannequinHUD->AddCharacterOverlay();
 		if (MannequinHUD->Announcement)
 		{
 			MannequinHUD->Announcement->SetVisibility(ESlateVisibility::Hidden);
