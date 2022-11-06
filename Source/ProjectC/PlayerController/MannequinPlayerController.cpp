@@ -6,6 +6,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 #include "ProjectC/Character/MannequinCharacter.h"
+#include "ProjectC/Combat/CombatComponent.h"
 #include "ProjectC/GameMode/MatchGameMode.h"
 #include "ProjectC/HUD/Announcement.h"
 #include "ProjectC/HUD/CharacterOverlay.h"
@@ -261,6 +262,12 @@ void AMannequinPlayerController::HandleCooldown()
 		{
 			MannequinHUD->Announcement->SetVisibility(ESlateVisibility::Visible);
 		}
+	}
+	AMannequinCharacter* MannequinCharacter = Cast<AMannequinCharacter>(GetPawn());
+	if (MannequinCharacter && MannequinCharacter->GetCombat())
+	{
+		MannequinCharacter->bDisableGameplay = true;
+		MannequinCharacter->GetCombat()->FireButtonPressed(false);		
 	}
 }
 

@@ -50,6 +50,13 @@ void AMannequinCharacter::BeginPlay()
 	}
 }
 
+void AMannequinCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	AimOffset(DeltaTime);
+	PollInit();
+}
+
 void AMannequinCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
@@ -69,8 +76,8 @@ void AMannequinCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 void AMannequinCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
 	DOREPLIFETIME(AMannequinCharacter, Health)
+	DOREPLIFETIME(AMannequinCharacter, bDisableGameplay)
 }
 
 void AMannequinCharacter::PostInitializeComponents()
@@ -160,10 +167,7 @@ void AMannequinCharacter::MulticastElim_Implementation()
 	// Disable character movement
 	GetCharacterMovement()->DisableMovement();
 	GetCharacterMovement()->StopMovementImmediately();
-	if (MannequinPlayerController)
-	{
-		DisableInput(MannequinPlayerController);
-	}
+	bDisableGameplay = true;
 	// Disable collision
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -216,6 +220,7 @@ void AMannequinCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, cons
 
 void AMannequinCharacter::MoveForward(float Value)
 {
+	if (bDisableGameplay) return;
 	if (Controller != nullptr && Value != 0.f)
 	{
 		const FRotator YawRotation(0.f, Controller->GetControlRotation().Yaw, 0.f);
@@ -226,6 +231,7 @@ void AMannequinCharacter::MoveForward(float Value)
 
 void AMannequinCharacter::MoveRight(float Value)
 {
+	if (bDisableGameplay) return;
 	if (Controller != nullptr && Value != 0.f)
 	{
 		const FRotator YawRotation(0.f, Controller->GetControlRotation().Yaw, 0.f);
@@ -246,6 +252,7 @@ void AMannequinCharacter::LookUp(float Value)
 
 void AMannequinCharacter::CrouchButtonPressed()
 {
+	if (bDisableGameplay) return;
 	bIsCrouched ? UnCrouch() : Crouch();
 }
 
@@ -284,6 +291,7 @@ void AMannequinCharacter::AimOffset(float DeltaTime)
 
 void AMannequinCharacter::FireButtonPressed()
 {
+	if (bDisableGameplay) return;
 	if (Combat)
 	{
 		Combat->FireButtonPressed(true);
@@ -292,6 +300,7 @@ void AMannequinCharacter::FireButtonPressed()
 
 void AMannequinCharacter::FireButtonReleased()
 {
+	if (bDisableGameplay) return;
 	if (Combat)
 	{
 		Combat->FireButtonPressed(false);
@@ -300,6 +309,7 @@ void AMannequinCharacter::FireButtonReleased()
 
 void AMannequinCharacter::ReloadButtonPressed()
 {
+	if (bDisableGameplay) return;
 	if (Combat)
 	{
 		Combat->Reload();
@@ -374,11 +384,4 @@ ECombatState AMannequinCharacter::GetCombatState() const
 {
 	if (Combat == nullptr) return ECombatState::ECS_MAX;
 	return Combat->CombatState;
-}
-
-void AMannequinCharacter::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-	AimOffset(DeltaTime);
-	PollInit();
 }
