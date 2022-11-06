@@ -8,9 +8,11 @@
 #include "ProjectC/Character/MannequinCharacter.h"
 #include "ProjectC/Combat/CombatComponent.h"
 #include "ProjectC/GameMode/MatchGameMode.h"
+#include "ProjectC/GameState/MannequinGameState.h"
 #include "ProjectC/HUD/Announcement.h"
 #include "ProjectC/HUD/CharacterOverlay.h"
 #include "ProjectC/HUD/MannequinHUD.h"
+#include "ProjectC/PlayerState/MannequinPlayerState.h"
 
 void AMannequinPlayerController::BeginPlay()
 {
@@ -261,6 +263,35 @@ void AMannequinPlayerController::HandleCooldown()
 		if (MannequinHUD->Announcement)
 		{
 			MannequinHUD->Announcement->SetVisibility(ESlateVisibility::Visible);
+			FString AnnouncementText("New Match starts in:");
+			MannequinHUD->Announcement->AnnouncementText->SetText(FText::FromString(AnnouncementText));
+
+			AMannequinGameState* GameState = Cast<AMannequinGameState>(UGameplayStatics::GetGameState(this));
+			AMannequinPlayerState* MannequinPlayerState = GetPlayerState<AMannequinPlayerState>();
+			if (GameState && MannequinPlayerState)
+			{
+				TArray<AMannequinPlayerState*> TopPlayers = GameState->TopScoringPlayers;
+				FString InfoTextString;
+				if (TopPlayers.Num() == 0)
+				{
+					InfoTextString = FString("There is no winner");
+				} else if (TopPlayers.Num() == 1 && TopPlayers[0] == MannequinPlayerState)
+				{
+					InfoTextString = FString("You are the winner");
+				} else if (TopPlayers.Num() == 1)
+				{
+					InfoTextString = FString::Printf(TEXT("Winner: \n%s"), *TopPlayers[0]->GetPlayerName());
+				}
+				else if (TopPlayers.Num() > 1)
+				{
+					InfoTextString = FString("Players tied for the win\n");
+					for (auto TiedPlayer : TopPlayers)
+					{
+						InfoTextString.Append(FString::Printf(TEXT("%s\n"), *TiedPlayer->GetPlayerName()));
+					}
+				}
+				MannequinHUD->Announcement->InfoText->SetText(FText::FromString(InfoTextString));
+			}
 		}
 	}
 	AMannequinCharacter* MannequinCharacter = Cast<AMannequinCharacter>(GetPawn());

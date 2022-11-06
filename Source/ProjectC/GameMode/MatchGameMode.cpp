@@ -4,6 +4,7 @@
 #include "GameFramework/PlayerStart.h"
 #include "Kismet/GameplayStatics.h"
 #include "ProjectC/Character/MannequinCharacter.h"
+#include "ProjectC/GameState/MannequinGameState.h"
 #include "ProjectC/PlayerController/MannequinPlayerController.h"
 #include "ProjectC/PlayerState/MannequinPlayerState.h"
 
@@ -43,7 +44,6 @@ void AMatchGameMode::Tick(float DeltaSeconds)
 		{
 			RestartGame();
 		} 
-
 	}
 }
 
@@ -72,10 +72,12 @@ void AMatchGameMode::PlayerEliminated(AMannequinCharacter* EliminatedCharacter,
 {
 	AMannequinPlayerState* AttackerPlayerState = AttackerController ? Cast<AMannequinPlayerState>(AttackerController->PlayerState) : nullptr;
 	AMannequinPlayerState* VictimPlayerState = VictimController ? Cast<AMannequinPlayerState>(VictimController->PlayerState) : nullptr;
-
-	if (AttackerPlayerState && AttackerPlayerState != VictimPlayerState)
+	AMannequinGameState* MannequinGameState = GetGameState<AMannequinGameState>();
+	
+	if (AttackerPlayerState && AttackerPlayerState != VictimPlayerState && GameState)
 	{
 		AttackerPlayerState->AddToScore(1.f);
+		MannequinGameState->UpdateTopScore(AttackerPlayerState);
 	}
 
 	if (VictimPlayerState)
