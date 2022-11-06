@@ -32,12 +32,11 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	class USoundCue* ImpactSound;
-	
-private:
 
 	UPROPERTY(VisibleAnywhere)
 	class UProjectileMovementComponent* ProjectileMovementComponent;
-
+	
+private:
 	UPROPERTY(EditAnywhere)
 	class UParticleSystem* Tracer;
 
