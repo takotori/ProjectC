@@ -113,6 +113,9 @@ void AMannequinCharacter::PlayReloadMontage()
 		FName SectionName;
 		switch (Combat->EquippedWeapon->GetWeaponType())
 		{
+		case EWeaponType::EWT_AssaultRifle:
+			SectionName = FName("AssaultRifle");
+			break;
 		case EWeaponType::EWT_GrenadeLauncher:
 			SectionName = FName("GrenadeLauncher");
 			break;
