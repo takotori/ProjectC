@@ -125,6 +125,9 @@ void AMannequinCharacter::PlayReloadMontage()
 		case EWeaponType::EWT_Submachinegun:
 			SectionName = FName("GrenadeLauncher");
 			break;
+		case EWeaponType::EWT_Shotgun:
+			SectionName = FName("GrenadeLauncher");
+			break;
 		case EWeaponType::EWT_MAX:
 			SectionName = FName("GrenadeLauncher");
 			break;
