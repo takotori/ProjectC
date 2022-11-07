@@ -128,11 +128,13 @@ void AMannequinCharacter::PlayReloadMontage()
 		case EWeaponType::EWT_Shotgun:
 			SectionName = FName("GrenadeLauncher");
 			break;
+		case EWeaponType::EWT_Sniper:
+			SectionName = FName("GrenadeLauncher");
+			break;
 		case EWeaponType::EWT_MAX:
 			SectionName = FName("GrenadeLauncher");
 			break;
 		}
-
 		AnimInstance->Montage_JumpToSection(SectionName);
 	}
 }
