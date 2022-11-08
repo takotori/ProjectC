@@ -114,7 +114,7 @@ void AMannequinCharacter::PlayReloadMontage()
 		switch (Combat->EquippedWeapon->GetWeaponType())
 		{
 		case EWeaponType::EWT_AssaultRifle:
-			SectionName = FName("Rifle");
+			SectionName = FName("AssaultRifle");
 			break;
 		case EWeaponType::EWT_GrenadeLauncher:
 			SectionName = FName("GrenadeLauncher");
@@ -123,16 +123,16 @@ void AMannequinCharacter::PlayReloadMontage()
 			SectionName = FName("GrenadeLauncher");
 			break;
 		case EWeaponType::EWT_Pistol:
-			SectionName = FName("Pistol");
+			SectionName = FName("GrenadeLauncher");
 			break;
 		case EWeaponType::EWT_Submachinegun:
-			SectionName = FName("Pistol");
+			SectionName = FName("GrenadeLauncher");
 			break;
 		case EWeaponType::EWT_Shotgun:
 			SectionName = FName("GrenadeLauncher");
 			break;
 		case EWeaponType::EWT_Sniper:
-			SectionName = FName("Rifle");
+			SectionName = FName("GrenadeLauncher");
 			break;
 		case EWeaponType::EWT_MAX:
 			SectionName = FName("GrenadeLauncher");
