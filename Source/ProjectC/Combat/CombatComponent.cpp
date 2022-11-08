@@ -60,10 +60,6 @@ void UCombatComponent::Fire()
 bool UCombatComponent::CanFire()
 {
 	if (EquippedWeapon == nullptr) return false;
-	if (!EquippedWeapon->IsEmpty() && bCanFire && CombatState == ECombatState::ECS_Reloading && EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Shotgun)
-	{
-		return true;
-	}
 	return !EquippedWeapon->IsEmpty() && bCanFire && CombatState == ECombatState::ECS_Unoccupied;
 }
 
@@ -96,13 +92,7 @@ void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& Trac
 void UCombatComponent::MulticastFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
 {
 	if (EquippedWeapon == nullptr) return;
-	if (Character && CombatState == ECombatState::ECS_Reloading && EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Shotgun)
-	{
-		Character->PlayFireMontage();
-		EquippedWeapon->Fire(TraceHitTarget);
-		CombatState = ECombatState::ECS_Unoccupied;
-		return;
-	}
+
 	if (Character && CombatState == ECombatState::ECS_Unoccupied)
 	{
 		Character->PlayFireMontage();
@@ -256,32 +246,3 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 		}
 	}
 }
-//
-// void UCombatComponent::SingleShellReload()
-// {
-// 	if (Character && Character->HasAuthority())
-// 	{
-// 		UpdateSingleShellAmmoValue();
-// 	}
-// }
-//
-// void UCombatComponent::UpdateSingleShellAmmoValue()
-// {
-//  	if (Character == nullptr || EquippedWeapon == nullptr) return;
-// 	Controller = Controller == nullptr ? Cast<AMannequinPlayerController>(Character->Controller) : Controller;
-// 	EquippedWeapon->AddAmmo(-1);
-// 	bCanFire = true;
-// 	if (EquippedWeapon->IsFull())
-// 	{
-// 		JumpToShotgunEnd();
-// 	}
-// }
-//
-// void UCombatComponent::JumpToShotgunEnd()
-// {
-// 	UAnimInstance* AnimInstance = Character->GetMesh()->GetAnimInstance();
-// 	if (AnimInstance && Character->GetReloadMontage())
-// 	{
-// 		AnimInstance->Montage_JumpToSection(FName("ShotgunEnd"));
-// 	}
-// }
