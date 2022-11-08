@@ -8,6 +8,7 @@
 #include "Engine/SkeletalMeshSocket.h"
 #include "Net/UnrealNetwork.h"
 #include "ProjectC/Character/MannequinCharacter.h"
+#include "ProjectC/Combat/CombatComponent.h"
 #include "ProjectC/PlayerController/MannequinPlayerController.h"
 
 // Sets default values
@@ -82,6 +83,11 @@ void AWeapon::SpendRound()
 
 void AWeapon::OnRep_Ammo()
 {
+	// WeaponOwnerCharacter = WeaponOwnerCharacter == nullptr? Cast<AMannequinCharacter>(GetOwner()) : WeaponOwnerCharacter;
+	// if (WeaponOwnerCharacter && WeaponOwnerCharacter->GetCombat() && IsFull() && GetWeaponType() == EWeaponType::EWT_Shotgun)
+	// {
+	// 	WeaponOwnerCharacter->GetCombat()->JumpToShotgunEnd();
+	// }
 	SetHUDAmmo();
 }
 
@@ -107,6 +113,11 @@ void AWeapon::SetHUDAmmo()
 bool AWeapon::IsEmpty()
 {
 	return Ammo <= 0;
+}
+
+bool AWeapon::IsFull()
+{
+	return Ammo == MagCapacity;
 }
 
 void AWeapon::AddAmmo(int32 AmmoToAdd)
