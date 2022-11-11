@@ -21,6 +21,7 @@ public:
 	void PlayFireMontage();
 	void PlayReloadMontage();
 	void PlayElimMontage();
+	void PlayThrowGrenadeMontage();
 	void Elim();
 
 	UFUNCTION(NetMulticast, Reliable)
@@ -42,6 +43,7 @@ protected:
 	void FireButtonReleased();
 	void ReloadButtonPressed();
 	void PlayHitReactMontage();
+	void GrenadeButtonPressed();
 
 	UFUNCTION()
 	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
@@ -76,6 +78,9 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = Combat)
 	UAnimMontage* ElimMontage;
+
+	UPROPERTY(EditAnywhere, Category = Combat)
+	UAnimMontage* ThrowGrenadeMontage;
 
 	// Player HP
 	UPROPERTY(EditAnywhere, Category = "Player Stats")
@@ -139,4 +144,5 @@ public:
 	FORCEINLINE float GetMaxHealth() const { return MaxHealth; }
 	ECombatState GetCombatState() const;
 	FORCEINLINE UCombatComponent* GetCombat() const { return Combat;}
+	FORCEINLINE UAnimMontage* GetReloadMontage() const { return ReloadMontage;}
 };

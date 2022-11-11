@@ -8,6 +8,7 @@
 #include "Engine/SkeletalMeshSocket.h"
 #include "Net/UnrealNetwork.h"
 #include "ProjectC/Character/MannequinCharacter.h"
+#include "ProjectC/Combat/CombatComponent.h"
 #include "ProjectC/PlayerController/MannequinPlayerController.h"
 
 // Sets default values
@@ -112,6 +113,11 @@ void AWeapon::SetHUDAmmo()
 bool AWeapon::IsEmpty()
 {
 	return Ammo <= 0;
+}
+
+bool AWeapon::IsFull()
+{
+	return Ammo == MagCapacity;
 }
 
 void AWeapon::AddAmmo(int32 AmmoToAdd)

@@ -69,6 +69,6 @@ void UMannequinAnimInstance::NativeUpdateAnimation(float DeltaTime)
 		}
 
 	}
-	bUseFABRIK = MannequinCharacter->GetCombatState() != ECombatState::ECS_Reloading;
+	bUseFABRIK = MannequinCharacter->GetCombatState() == ECombatState::ECS_Unoccupied;
 	
 }

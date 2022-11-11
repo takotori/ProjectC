@@ -30,6 +30,9 @@ public:
 	
 	void JumpToShotgunEnd();
 
+	UFUNCTION(BlueprintCallable)
+	void ThrowGrenadeFinished();
+	
 protected:
 	virtual void BeginPlay() override;
 
@@ -47,6 +50,11 @@ protected:
 	void ServerReload();
 
 	void HandleReload();
+
+	void ThrowGrenade();
+
+	UFUNCTION(Server, Reliable)
+	void ServerThrowGrenade();
 
 private:
 	UPROPERTY()
