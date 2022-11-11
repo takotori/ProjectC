@@ -1,10 +1,7 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "ProjectC/Types/CombatState.h"
 #include "ProjectC/Types/WeaponTypes.h"
 #include "Weapon.generated.h"
 
@@ -98,6 +95,7 @@ public:
 	FORCEINLINE void SetWeaponState(EWeaponState State) { WeaponState = State; }
 	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() const { return WeaponMesh; }
 	bool IsEmpty();
+	bool IsFull();
 	FORCEINLINE int32 GetAmmo() const { return Ammo; }
 	FORCEINLINE int32 GetMagCapacity() const { return MagCapacity; }
 	FORCEINLINE EWeaponType GetWeaponType() const { return WeaponType; }
