@@ -84,11 +84,19 @@ void AMatchGameMode::PlayerEliminated(AMannequinCharacter* EliminatedCharacter,
 	{
 		VictimPlayerState->AddToDefeats(1);
 	}
+
+	if (VictimPlayerState == AttackerPlayerState)
+	{
+		AttackerPlayerState->AddToScore(-1.f);
+		if (AttackerPlayerState->GetScore() > 0)
+		{
+			MannequinGameState->UpdateTopScore(AttackerPlayerState);
+		}
+	}
 	
 	if (EliminatedCharacter)
 	{
 		EliminatedCharacter->Elim();
-		
 	}
 }
 

@@ -43,7 +43,6 @@ void AMannequinCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	Combat->SpawnWeaponOnCharacter();
-	UpdateHUDHealth();
 	if (HasAuthority())
 	{
 		OnTakeAnyDamage.AddDynamic(this, &AMannequinCharacter::ReceiveDamage);
@@ -368,6 +367,15 @@ void AMannequinCharacter::PollInit()
 		{
 			MannequinPlayerState->AddToScore(0.f);
 			MannequinPlayerState->AddToDefeats(0);
+		}
+	}
+	if (MannequinPlayerController == nullptr)
+	{
+		MannequinPlayerController = MannequinPlayerController == nullptr ? Cast<AMannequinPlayerController>(Controller) : MannequinPlayerController;
+		if (MannequinPlayerController)
+		{
+
+			UpdateHUDHealth();
 		}
 	}
 }

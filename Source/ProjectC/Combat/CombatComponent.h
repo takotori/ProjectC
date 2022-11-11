@@ -25,6 +25,11 @@ public:
 	
 	void FireButtonPressed(bool bPressed);
 
+	UFUNCTION(BlueprintCallable)
+	void SingleShellReload();
+	
+	void JumpToShotgunEnd();
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -84,4 +89,6 @@ private:
 
 	UFUNCTION()
 	void OnRep_CombatState();
+
+	void UpdateSingleShellAmmoValue();
 };

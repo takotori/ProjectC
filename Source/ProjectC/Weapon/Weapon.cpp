@@ -82,6 +82,11 @@ void AWeapon::SpendRound()
 
 void AWeapon::OnRep_Ammo()
 {
+	WeaponOwnerCharacter = WeaponOwnerCharacter == nullptr? Cast<AMannequinCharacter>(GetOwner()) : WeaponOwnerCharacter;
+	if (WeaponOwnerCharacter && WeaponOwnerCharacter->GetCombat() && IsFull() && GetWeaponType() == EWeaponType::EWT_Shotgun)
+	{
+		WeaponOwnerCharacter->GetCombat()->JumpToShotgunEnd();
+	}
 	SetHUDAmmo();
 }
 
@@ -111,7 +116,7 @@ bool AWeapon::IsEmpty()
 
 void AWeapon::AddAmmo(int32 AmmoToAdd)
 {
-	Ammo = FMath::Clamp(Ammo - AmmoToAdd, 0, MagCapacity);
+	Ammo = FMath::Clamp(Ammo + AmmoToAdd, 0, MagCapacity);
 	SetHUDAmmo();
 }
 

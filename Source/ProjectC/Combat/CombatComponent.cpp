@@ -60,6 +60,10 @@ void UCombatComponent::Fire()
 bool UCombatComponent::CanFire()
 {
 	if (EquippedWeapon == nullptr) return false;
+	if (!EquippedWeapon->IsEmpty() && bCanFire && CombatState == ECombatState::ECS_Reloading && EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Shotgun)
+	{
+		return true;
+	}
 	return !EquippedWeapon->IsEmpty() && bCanFire && CombatState == ECombatState::ECS_Unoccupied;
 }
 
@@ -92,7 +96,13 @@ void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& Trac
 void UCombatComponent::MulticastFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
 {
 	if (EquippedWeapon == nullptr) return;
-
+	if (Character && CombatState == ECombatState::ECS_Reloading && EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Shotgun)
+	{
+		Character->PlayFireMontage();
+		EquippedWeapon->Fire(TraceHitTarget);
+		CombatState = ECombatState::ECS_Unoccupied;
+		return;
+	}
 	if (Character && CombatState == ECombatState::ECS_Unoccupied)
 	{
 		Character->PlayFireMontage();
@@ -122,7 +132,8 @@ void UCombatComponent::SpawnWeaponOnCharacter()
 
 void UCombatComponent::Reload()
 {
-	if (EquippedWeapon && EquippedWeapon->GetAmmo() < EquippedWeapon->GetMagCapacity() && CombatState != ECombatState::ECS_Reloading)
+	if (EquippedWeapon && EquippedWeapon->GetAmmo() < EquippedWeapon->GetMagCapacity() && CombatState !=
+		ECombatState::ECS_Reloading)
 	{
 		ServerReload();
 	}
@@ -141,7 +152,7 @@ void UCombatComponent::FinishReloading()
 	if (Character->HasAuthority())
 	{
 		CombatState = ECombatState::ECS_Unoccupied;
-		EquippedWeapon->AddAmmo(-EquippedWeapon->GetMagCapacity());
+		EquippedWeapon->AddAmmo(EquippedWeapon->GetMagCapacity());
 	}
 	if (bFireButtonPressed)
 	{
@@ -156,7 +167,7 @@ void UCombatComponent::OnRep_CombatState()
 	case ECombatState::ECS_Reloading:
 		HandleReload();
 		break;
-	case  ECombatState::ECS_Unoccupied:
+	case ECombatState::ECS_Unoccupied:
 		if (bFireButtonPressed)
 		{
 			Fire();
@@ -192,7 +203,7 @@ void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
 			FVector Velocity = Character->GetVelocity();
 			Velocity.Z = 0.f;
 			CrosshairVelocityFactor = FMath::GetMappedRangeValueClamped(WalkSpeedRange, VelocityMultiplierRange,
-																		Velocity.Size());
+			                                                            Velocity.Size());
 
 			if (Character->GetCharacterMovement()->IsFalling())
 			{
@@ -244,5 +255,34 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 		{
 			HUDPackage.CrosshairsColor = FLinearColor::White;
 		}
+	}
+}
+
+void UCombatComponent::SingleShellReload()
+{
+	if (Character && Character->HasAuthority())
+	{
+		UpdateSingleShellAmmoValue();
+	}
+}
+
+void UCombatComponent::UpdateSingleShellAmmoValue()
+{
+ 	if (Character == nullptr || EquippedWeapon == nullptr) return;
+	Controller = Controller == nullptr ? Cast<AMannequinPlayerController>(Character->Controller) : Controller;
+	EquippedWeapon->AddAmmo(1);
+	bCanFire = true;
+	if (EquippedWeapon->IsFull())
+	{
+		JumpToShotgunEnd();
+	}
+}
+
+void UCombatComponent::JumpToShotgunEnd()
+{
+	UAnimInstance* AnimInstance = Character->GetMesh()->GetAnimInstance();
+	if (AnimInstance && Character->GetReloadMontage())
+	{
+		AnimInstance->Montage_JumpToSection(FName("ShotgunEnd"));
 	}
 }
