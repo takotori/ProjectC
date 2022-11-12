@@ -133,6 +133,10 @@ private:
 
 	UPROPERTY()
 	class AMannequinPlayerState* MannequinPlayerState;
+
+	// Grenade
+	UPROPERTY(VisibleAnywhere)
+	UStaticMeshComponent* AttachedGrenade;
 	
 public:
 	AWeapon* GetEquippedWeapon();
@@ -145,4 +149,5 @@ public:
 	ECombatState GetCombatState() const;
 	FORCEINLINE UCombatComponent* GetCombat() const { return Combat;}
 	FORCEINLINE UAnimMontage* GetReloadMontage() const { return ReloadMontage;}
+	FORCEINLINE UStaticMeshComponent* GetAttachedGrenade() const { return AttachedGrenade;}
 };

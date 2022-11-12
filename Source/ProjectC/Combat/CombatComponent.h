@@ -22,17 +22,20 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void FinishReloading();
-	
+
 	void FireButtonPressed(bool bPressed);
 
 	UFUNCTION(BlueprintCallable)
 	void SingleShellReload();
-	
+
 	void JumpToShotgunEnd();
 
 	UFUNCTION(BlueprintCallable)
 	void ThrowGrenadeFinished();
-	
+
+	UFUNCTION(BlueprintCallable)
+	void LaunchGrenade();
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -55,6 +58,10 @@ protected:
 
 	UFUNCTION(Server, Reliable)
 	void ServerThrowGrenade();
+
+	void AttachActorToRightHand(AActor* ActorToAttach);
+
+	void AttachActorToLeftHand(AActor* ActorToAttach);
 
 private:
 	UPROPERTY()
@@ -99,4 +106,6 @@ private:
 	void OnRep_CombatState();
 
 	void UpdateSingleShellAmmoValue();
+
+	void ShowAttachedGrenade(bool bShowGrenade);
 };
