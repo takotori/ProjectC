@@ -1,16 +1,11 @@
-#include "HealthPickup.h"
+
+#include "SpeedPickup.h"
 
 #include "ProjectC/Character/MannequinCharacter.h"
 #include "ProjectC/Components/BuffComponent.h"
 
-AHealthPickup::AHealthPickup()
-{
-	bReplicates = true;
-}
-
-void AHealthPickup::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-                                    UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
-                                    const FHitResult& SweepResult)
+void ASpeedPickup::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+                                   UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	Super::OnSphereOverlap(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex, bFromSweep, SweepResult);
 	AMannequinCharacter* MannequinCharacter = Cast<AMannequinCharacter>(OtherActor);
@@ -19,7 +14,7 @@ void AHealthPickup::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AA
 		UBuffComponent* Buff = MannequinCharacter->GetBuff();
 		if (Buff)
 		{
-			Buff->Heal(HealAmount, HealingTime);
+			Buff->BuffSpeed(BaseSpeedBuff, CrouchSpeedBuff, SpeedBuffTime);
 		}
 	}
 	Destroy();

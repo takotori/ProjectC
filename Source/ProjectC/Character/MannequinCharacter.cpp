@@ -102,6 +102,7 @@ void AMannequinCharacter::PostInitializeComponents()
 	if (Buff)
 	{
 		Buff->Character = this;
+		Buff->SetInitialSpeeds(GetCharacterMovement()->MaxWalkSpeed, GetCharacterMovement()->MaxWalkSpeedCrouched);
 	}
 }
 

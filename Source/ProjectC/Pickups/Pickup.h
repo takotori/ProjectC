@@ -31,6 +31,13 @@ protected:
 	float BaseTurnRate = 45.f;
 
 private:
+
+	UPROPERTY(VisibleAnywhere)
+	class UNiagaraComponent* PickupEffectComponent;
+
+	UPROPERTY(EditAnywhere)
+	class UNiagaraSystem* PickupEffect;
+	
 	UPROPERTY(EditAnywhere)
 	class USphereComponent* OverlapSphere;
 
@@ -39,5 +46,4 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* PickupMesh;
-	
 };
