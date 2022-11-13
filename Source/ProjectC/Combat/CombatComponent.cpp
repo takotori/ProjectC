@@ -400,3 +400,15 @@ void UCombatComponent::ServerLaunchGrenade_Implementation(const FVector_NetQuant
 		}
 	}
 }
+
+void UCombatComponent::PickupAmmo(EWeaponType WeaponType, int32 AmmoAmount)
+{
+	if (EquippedWeapon)
+	{
+		if (EquippedWeapon->IsEmpty())
+		{
+			Reload();
+		}
+		EquippedWeapon->AddAmmo(AmmoAmount);
+	}
+}

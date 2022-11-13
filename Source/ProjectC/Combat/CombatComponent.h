@@ -4,6 +4,7 @@
 #include "Components/ActorComponent.h"
 #include "ProjectC/HUD/MannequinHUD.h"
 #include "ProjectC/Types/CombatState.h"
+#include "ProjectC/Types/WeaponTypes.h"
 #include "CombatComponent.generated.h"
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
@@ -38,6 +39,8 @@ public:
 
 	UFUNCTION(Server, Reliable)
 	void ServerLaunchGrenade(const FVector_NetQuantize& Target);
+
+	void PickupAmmo(EWeaponType WeaponType, int32 AmmoAmount);
 
 protected:
 	virtual void BeginPlay() override;

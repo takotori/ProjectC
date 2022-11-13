@@ -22,6 +22,7 @@ APickup::APickup()
 	PickupMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("PickupMesh"));
 	PickupMesh->SetupAttachment(OverlapSphere);
 	PickupMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	PickupMesh->SetRelativeScale3D(FVector(5.f, 5.f, 5.f));
 }
 
 void APickup::BeginPlay()
@@ -42,7 +43,10 @@ void APickup::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* 
 void APickup::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	if (PickupMesh)
+	{
+		PickupMesh->AddWorldRotation(FRotator(0.f, BaseTurnRate * DeltaTime, 0.f));
+	}
 }
 
 void APickup::Destroyed()
