@@ -6,7 +6,8 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Net/UnrealNetwork.h"
 #include "ProjectC/ProjectC.h"
-#include "ProjectC/Combat/CombatComponent.h"
+#include "ProjectC/Components//BuffComponent.h"
+#include "ProjectC/Components/CombatComponent.h"
 #include "ProjectC/GameMode/MatchGameMode.h"
 #include "ProjectC/PlayerController/MannequinPlayerController.h"
 #include "ProjectC/PlayerState/MannequinPlayerState.h"
@@ -26,6 +27,9 @@ AMannequinCharacter::AMannequinCharacter()
 
 	Combat = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
 	Combat->SetIsReplicated(true);
+
+	Buff = CreateDefaultSubobject<UBuffComponent>(TEXT("BuffComponent"));
+	Buff->SetIsReplicated(true);
 
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
@@ -94,6 +98,10 @@ void AMannequinCharacter::PostInitializeComponents()
 	if (Combat)
 	{
 		Combat->Character = this;
+	}
+	if (Buff)
+	{
+		Buff->Character = this;
 	}
 }
 

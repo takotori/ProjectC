@@ -8,7 +8,7 @@
 #include "Engine/SkeletalMeshSocket.h"
 #include "Net/UnrealNetwork.h"
 #include "ProjectC/Character/MannequinCharacter.h"
-#include "ProjectC/Combat/CombatComponent.h"
+#include "ProjectC/Components/CombatComponent.h"
 #include "ProjectC/PlayerController/MannequinPlayerController.h"
 
 // Sets default values

@@ -6,7 +6,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 #include "ProjectC/Character/MannequinCharacter.h"
-#include "ProjectC/Combat/CombatComponent.h"
+#include "ProjectC/Components/CombatComponent.h"
 #include "ProjectC/GameMode/MatchGameMode.h"
 #include "ProjectC/GameState/MannequinGameState.h"
 #include "ProjectC/HUD/Announcement.h"
