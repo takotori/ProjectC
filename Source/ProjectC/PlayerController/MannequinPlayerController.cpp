@@ -41,6 +41,11 @@ void AMannequinPlayerController::PollInit()
 				SetHUDHealth(HUDHealth, HUDMaxHealth);
 				SetHUDScore(HUDScore);
 				SetHUDDefeats(HUDDefeats);
+				AMannequinCharacter* MannequinCharacter = Cast<AMannequinCharacter>(GetPawn());
+				if (MannequinCharacter && MannequinCharacter->GetCombat())
+				{
+					SetHUDGrenades(MannequinCharacter->GetCombat()->GetGrenades());	
+				}
 			}
 		}
 	}
@@ -153,6 +158,20 @@ void AMannequinPlayerController::SetHUDAnnouncementCountdown(float CountdownTime
 		int32 Seconds = CountdownTime - Minutes * 60;
 		FString CountdownText = FString::Printf(TEXT("%02d:%02d"), Minutes, Seconds);
 		MannequinHUD->Announcement->WarmupTime->SetText(FText::FromString(CountdownText));
+	}
+}
+
+void AMannequinPlayerController::SetHUDGrenades(int32 Grenades)
+{
+	MannequinHUD = MannequinHUD == nullptr ? Cast<AMannequinHUD>(GetHUD()) : MannequinHUD;
+	if (MannequinHUD && MannequinHUD->CharacterOverlay && MannequinHUD->CharacterOverlay->GrenadeAmount)
+	{
+		FString GrenadeText = FString::Printf(TEXT("%d"), Grenades);
+		MannequinHUD->CharacterOverlay->GrenadeAmount->SetText(FText::FromString(GrenadeText));
+	}
+	else
+	{
+		HUDGrenades = Grenades;
 	}
 }
 
