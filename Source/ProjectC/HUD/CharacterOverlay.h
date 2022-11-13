@@ -6,9 +6,6 @@
 #include "Blueprint/UserWidget.h"
 #include "CharacterOverlay.generated.h"
 
-/**
- * 
- */
 UCLASS()
 class PROJECTC_API UCharacterOverlay : public UUserWidget
 {
@@ -20,6 +17,12 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* HealthText;
+
+	UPROPERTY(meta = (BindWidget))
+	UProgressBar* ShieldBar;
+
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* ShieldText;
 
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* ScoreAmount;

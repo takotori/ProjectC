@@ -89,6 +89,7 @@ void AMannequinCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(AMannequinCharacter, Health)
+	DOREPLIFETIME(AMannequinCharacter, Shield)
 	DOREPLIFETIME(AMannequinCharacter, bDisableGameplay)
 }
 
@@ -259,8 +260,25 @@ void AMannequinCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, cons
                                         AController* InstigatorController, AActor* DamageCauser)
 {
 	if (bElimmed) return;
-	Health = FMath::Clamp(Health - Damage, 0.f, MaxHealth);
+
+	float DamageToHealth = Damage;
+	if (Shield > 0.f)
+	{
+		if (Shield >= Damage)
+		{
+			Shield = FMath::Clamp(Shield - Damage, 0.f, MaxShield);
+			DamageToHealth = 0;
+		}
+		else
+		{
+			Shield = 0;
+			DamageToHealth = FMath::Clamp(DamageToHealth - Shield, 0.f, Damage);
+		}
+	}
+	
+	Health = FMath::Clamp(Health - DamageToHealth, 0.f, MaxHealth);
 	UpdateHUDHealth();
+	UpdateHUDShield();
 	PlayHitReactMontage();
 
 	if (Health == 0.f)
@@ -395,6 +413,26 @@ void AMannequinCharacter::UpdateHUDHealth()
 	}
 }
 
+void AMannequinCharacter::OnRep_Shield(float LastShield)
+{
+	UpdateHUDShield();
+	if (Shield < LastShield && !bElimmed)
+	{
+		PlayHitReactMontage();
+	}
+}
+
+void AMannequinCharacter::UpdateHUDShield()
+{
+	MannequinPlayerController = MannequinPlayerController == nullptr
+								? Cast<AMannequinPlayerController>(Controller)
+								: MannequinPlayerController;
+	if (MannequinPlayerController)
+	{
+		MannequinPlayerController->SetHUDShield(Shield, MaxShield);
+	}
+}
+
 void AMannequinCharacter::PollInit()
 {
 	if (MannequinPlayerState == nullptr)
@@ -411,8 +449,8 @@ void AMannequinCharacter::PollInit()
 		MannequinPlayerController = MannequinPlayerController == nullptr ? Cast<AMannequinPlayerController>(Controller) : MannequinPlayerController;
 		if (MannequinPlayerController)
 		{
-
 			UpdateHUDHealth();
+			UpdateHUDShield();
 		}
 	}
 }

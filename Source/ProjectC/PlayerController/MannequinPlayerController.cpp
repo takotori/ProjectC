@@ -38,13 +38,14 @@ void AMannequinPlayerController::PollInit()
 			CharacterOverlay = MannequinHUD->CharacterOverlay;
 			if (CharacterOverlay)
 			{
-				SetHUDHealth(HUDHealth, HUDMaxHealth);
-				SetHUDScore(HUDScore);
-				SetHUDDefeats(HUDDefeats);
+				if (bInitializeHealth) SetHUDHealth(HUDHealth, HUDMaxHealth);
+				if (bInitializeShield) SetHUDShield(HUDShield, HUDMaxShield);
+				if (bInitializeScore) SetHUDScore(HUDScore);
+				if (bInitializeDefeats) SetHUDDefeats(HUDDefeats);
 				AMannequinCharacter* MannequinCharacter = Cast<AMannequinCharacter>(GetPawn());
 				if (MannequinCharacter && MannequinCharacter->GetCombat())
 				{
-					SetHUDGrenades(MannequinCharacter->GetCombat()->GetGrenades());	
+					if (bInitializeGrenades) SetHUDGrenades(MannequinCharacter->GetCombat()->GetGrenades());	
 				}
 			}
 		}
@@ -91,9 +92,28 @@ void AMannequinPlayerController::SetHUDHealth(float Health, float MaxHealth)
 	}
 	else
 	{
-		bInitializeCharacterOverlay = true;
+		bInitializeHealth = true;
 		HUDHealth = Health;
 		HUDMaxHealth = MaxHealth;
+	}
+}
+
+void AMannequinPlayerController::SetHUDShield(float Shield, float MaxShield)
+{
+	MannequinHUD = MannequinHUD == nullptr ? Cast<AMannequinHUD>(GetHUD()) : MannequinHUD;
+	if (MannequinHUD && MannequinHUD->CharacterOverlay && MannequinHUD->CharacterOverlay->ShieldBar && MannequinHUD->
+		CharacterOverlay->ShieldText)
+	{
+		const float ShieldPercent = Shield / MaxShield;
+		MannequinHUD->CharacterOverlay->ShieldBar->SetPercent(ShieldPercent);
+		FString ShieldText = FString::Printf(TEXT("%d/%d"), FMath::CeilToInt(Shield), FMath::CeilToInt(MaxShield));
+		MannequinHUD->CharacterOverlay->ShieldText->SetText(FText::FromString(ShieldText));
+	}
+	else
+	{
+		bInitializeShield = true;
+		HUDShield = Shield;
+		HUDMaxShield = MaxShield;
 	}
 }
 
@@ -107,7 +127,7 @@ void AMannequinPlayerController::SetHUDScore(float Score)
 	}
 	else
 	{
-		bInitializeCharacterOverlay = true;
+		bInitializeScore = true;
 		HUDScore = Score;
 	}
 }
@@ -122,7 +142,7 @@ void AMannequinPlayerController::SetHUDDefeats(int32 Defeats)
 	}
 	else
 	{
-		bInitializeCharacterOverlay = true;
+		bInitializeDefeats = true;
 		HUDDefeats = Defeats;
 	}
 }
@@ -171,6 +191,7 @@ void AMannequinPlayerController::SetHUDGrenades(int32 Grenades)
 	}
 	else
 	{
+		bInitializeGrenades = true;
 		HUDGrenades = Grenades;
 	}
 }

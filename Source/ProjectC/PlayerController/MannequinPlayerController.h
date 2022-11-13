@@ -11,6 +11,7 @@ class PROJECTC_API AMannequinPlayerController : public APlayerController
 
 public:
 	void SetHUDHealth(float Health, float MaxHealth);
+	void SetHUDShield(float Shield, float MaxShield);
 	void SetHUDScore(float Score);
 	void SetHUDDefeats(int32 Defeats);
 	void SetHUDAmmo(int32 Ammo);
@@ -76,10 +77,16 @@ private:
 	UPROPERTY()
 	class UCharacterOverlay* CharacterOverlay;
 
-	bool bInitializeCharacterOverlay = false;
-
+	bool bInitializeHealth = false;
+	bool bInitializeScore = false;
+	bool bInitializeDefeats = false;
+	bool bInitializeGrenades = false;
+	bool bInitializeShield = false;
+	
 	float HUDHealth;
 	float HUDMaxHealth;
+	float HUDShield;
+	float HUDMaxShield;
 	float HUDScore;
 	int32 HUDDefeats;
 	int32 HUDGrenades;
