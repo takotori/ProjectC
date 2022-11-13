@@ -373,10 +373,10 @@ void AMannequinCharacter::ReloadButtonPressed()
 	}
 }
 
-void AMannequinCharacter::OnRep_Health()
+void AMannequinCharacter::OnRep_Health(float LastHealth)
 {
 	UpdateHUDHealth();
-	if (!bElimmed)
+	if (Health < LastHealth && !bElimmed)
 	{
 		PlayHitReactMontage();
 	}

@@ -30,6 +30,8 @@ public:
 	UPROPERTY(Replicated)
 	bool bDisableGameplay = false;
 
+	void UpdateHUDHealth();
+	
 protected:
 	virtual void BeginPlay() override;
 
@@ -48,7 +50,6 @@ protected:
 	UFUNCTION()
 	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
 	                   class AController* InstigatorController, AActor* DamageCauser);
-	void UpdateHUDHealth();
 	// Poll for any relevant classes and initialize HUD
 	void PollInit();
 
@@ -61,7 +62,7 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	class UBuffComponent* Buff;
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess = "true"))
 	class AWeapon* Weapon;
 
@@ -93,7 +94,7 @@ private:
 	float Health = 100.f;
 
 	UFUNCTION()
-	void OnRep_Health();
+	void OnRep_Health(float LastHealth);
 
 	UPROPERTY()
 	class AMannequinPlayerController* MannequinPlayerController;
@@ -104,19 +105,19 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	float ElimDelay = 3.f;
-	
+
 	void ElimTimerFinished();
 
 	// Dissolve effect
 	UPROPERTY(VisibleAnywhere)
 	UTimelineComponent* DissolveTimeline;
-	
+
 	FOnTimelineFloat DissolveTrack;
 
 	UFUNCTION()
 	void UpdateDissolveMaterial(float DissolveValue);
 	void StartDissolve();
-	
+
 	UPROPERTY(EditAnywhere)
 	UCurveFloat* DissolveCurve;
 
@@ -130,7 +131,7 @@ private:
 	// Material instance set on the blueprint, used with the dynamic material instance
 	UPROPERTY(EditDefaultsOnly, Category = Elim)
 	UMaterialInstance* DissolveMaterialInstance1;
-	
+
 	UPROPERTY(EditDefaultsOnly, Category = Elim)
 	UMaterialInstance* DissolveMaterialInstance2;
 
@@ -140,7 +141,7 @@ private:
 	// Grenade
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* AttachedGrenade;
-	
+
 public:
 	AWeapon* GetEquippedWeapon();
 	FORCEINLINE float GetAO_Yaw() { return AO_Yaw; }
@@ -148,9 +149,11 @@ public:
 	FVector GetHitTarget() const;
 	FORCEINLINE bool IsElimmed() const { return bElimmed; }
 	FORCEINLINE float GetHealth() const { return Health; }
+	FORCEINLINE void SetHealth(float Amount) { Health = Amount; }
 	FORCEINLINE float GetMaxHealth() const { return MaxHealth; }
 	ECombatState GetCombatState() const;
-	FORCEINLINE UCombatComponent* GetCombat() const { return Combat;}
-	FORCEINLINE UAnimMontage* GetReloadMontage() const { return ReloadMontage;}
-	FORCEINLINE UStaticMeshComponent* GetAttachedGrenade() const { return AttachedGrenade;}
+	FORCEINLINE UCombatComponent* GetCombat() const { return Combat; }
+	FORCEINLINE UAnimMontage* GetReloadMontage() const { return ReloadMontage; }
+	FORCEINLINE UStaticMeshComponent* GetAttachedGrenade() const { return AttachedGrenade; }
+	FORCEINLINE UBuffComponent* GetBuff() const { return Buff; }
 };
