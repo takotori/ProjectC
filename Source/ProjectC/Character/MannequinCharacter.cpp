@@ -3,6 +3,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/WidgetComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Net/UnrealNetwork.h"
 #include "ProjectC/ProjectC.h"
@@ -50,7 +51,10 @@ AMannequinCharacter::AMannequinCharacter()
 void AMannequinCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	Combat->SpawnWeaponOnCharacter();
+	// Combat->SpawnWeaponOnCharacter();
+	
+	SpawnDefaultWeapon();
+	
 	if (HasAuthority())
 	{
 		OnTakeAnyDamage.AddDynamic(this, &AMannequinCharacter::ReceiveDamage);
@@ -433,6 +437,31 @@ void AMannequinCharacter::UpdateHUDShield()
 	}
 }
 
+void AMannequinCharacter::UpdateHUDAmmo()
+{
+	MannequinPlayerController = MannequinPlayerController == nullptr
+								? Cast<AMannequinPlayerController>(Controller)
+								: MannequinPlayerController;
+	if (MannequinPlayerController && Combat && Combat->EquippedWeapon)
+	{
+		MannequinPlayerController->SetHUDAmmo(GetEquippedWeapon()->GetAmmo());
+	}
+}
+
+void AMannequinCharacter::SpawnDefaultWeapon()
+{
+	AMatchGameMode* MatchGameMode = Cast<AMatchGameMode>(UGameplayStatics::GetGameMode(this));
+	UWorld* World = GetWorld();
+	if (MatchGameMode && World && !bElimmed && DefaultWeaponClass)
+	{
+		AWeapon* StartingWeapon = World->SpawnActor<AWeapon>(DefaultWeaponClass);
+		if (Combat)
+		{
+			Combat->EquipWeapon(StartingWeapon);
+		}
+	}
+}
+
 void AMannequinCharacter::PollInit()
 {
 	if (MannequinPlayerState == nullptr)
@@ -451,6 +480,7 @@ void AMannequinCharacter::PollInit()
 		{
 			UpdateHUDHealth();
 			UpdateHUDShield();
+			UpdateHUDAmmo();
 		}
 	}
 }

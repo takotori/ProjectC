@@ -18,7 +18,7 @@ public:
 	                           FActorComponentTickFunction* ThisTickFunction) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	friend class AMannequinCharacter;
-	void SpawnWeaponOnCharacter();
+	void EquipWeapon(class AWeapon* WeaponToEquip);
 	void Reload();
 
 	UFUNCTION(BlueprintCallable)
@@ -72,6 +72,9 @@ protected:
 
 	void AttachActorToLeftHand(AActor* ActorToAttach);
 
+	UFUNCTION()
+	void OnRep_EquippedWeapon();
+
 private:
 	UPROPERTY()
 	AMannequinCharacter* Character;
@@ -82,10 +85,7 @@ private:
 	UPROPERTY()
 	class AMannequinHUD* HUD;
 
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<class AWeapon> WeaponToSpawn;
-
-	UPROPERTY()
+	UPROPERTY(ReplicatedUsing = OnRep_EquippedWeapon)
 	AWeapon* EquippedWeapon;
 
 	bool bFireButtonPressed;

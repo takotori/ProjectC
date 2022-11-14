@@ -42,6 +42,7 @@ void AMannequinPlayerController::PollInit()
 				if (bInitializeShield) SetHUDShield(HUDShield, HUDMaxShield);
 				if (bInitializeScore) SetHUDScore(HUDScore);
 				if (bInitializeDefeats) SetHUDDefeats(HUDDefeats);
+				if (bInitializeAmmo) SetHUDAmmo(HUDWeaponAmmo);
 				AMannequinCharacter* MannequinCharacter = Cast<AMannequinCharacter>(GetPawn());
 				if (MannequinCharacter && MannequinCharacter->GetCombat())
 				{
@@ -154,6 +155,11 @@ void AMannequinPlayerController::SetHUDAmmo(int32 Ammo)
 	{
 		FString AmmoText = FString::Printf(TEXT("%d"), Ammo);
 		MannequinHUD->CharacterOverlay->AmmoAmount->SetText(FText::FromString(AmmoText));
+	}
+	else
+	{
+		bInitializeAmmo = true;
+		HUDWeaponAmmo = Ammo;
 	}
 }
 

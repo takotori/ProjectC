@@ -82,6 +82,7 @@ private:
 	bool bInitializeDefeats = false;
 	bool bInitializeGrenades = false;
 	bool bInitializeShield = false;
+	bool bInitializeAmmo = false;
 	
 	float HUDHealth;
 	float HUDMaxHealth;
@@ -90,4 +91,6 @@ private:
 	float HUDScore;
 	int32 HUDDefeats;
 	int32 HUDGrenades;
+	int32 HUDWeaponAmmo;
+	
 };

@@ -32,6 +32,9 @@ public:
 
 	void UpdateHUDHealth();
 	void UpdateHUDShield();
+	void UpdateHUDAmmo();
+
+	void SpawnDefaultWeapon();
 	
 protected:
 	virtual void BeginPlay() override;
@@ -55,7 +58,7 @@ protected:
 	void PollInit();
 
 private:
-	UPROPERTY(VisibleAnywhere, Category=Camera)
+	UPROPERTY(VisibleAnywhere, Category = "Camera")
 	class UCameraComponent* FollowCamera;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess = "true"))
@@ -72,19 +75,19 @@ private:
 
 	FRotator StartingAimRotation;
 
-	UPROPERTY(EditAnywhere, Category = Combat)
+	UPROPERTY(EditAnywhere, Category = "Combat")
 	class UAnimMontage* FireWeaponMontage;
 
-	UPROPERTY(EditAnywhere, Category = Combat)
+	UPROPERTY(EditAnywhere, Category = "Combat")
 	UAnimMontage* ReloadMontage;
 
-	UPROPERTY(EditAnywhere, Category = Combat)
+	UPROPERTY(EditAnywhere, Category = "Combat")
 	UAnimMontage* HitReactMontage;
 
-	UPROPERTY(EditAnywhere, Category = Combat)
+	UPROPERTY(EditAnywhere, Category = "Combat")
 	UAnimMontage* ElimMontage;
 
-	UPROPERTY(EditAnywhere, Category = Combat)
+	UPROPERTY(EditAnywhere, Category = "Combat")
 	UAnimMontage* ThrowGrenadeMontage;
 
 	// Player HP
@@ -133,17 +136,17 @@ private:
 	UCurveFloat* DissolveCurve;
 
 	// Dynamic instance that we can change at runtime
-	UPROPERTY(VisibleAnywhere, Category = Elim)
+	UPROPERTY(VisibleAnywhere, Category = "Elim")
 	UMaterialInstanceDynamic* DynamicDissolveMaterialInstance1;
 
-	UPROPERTY(VisibleAnywhere, Category = Elim)
+	UPROPERTY(VisibleAnywhere, Category = "Elim")
 	UMaterialInstanceDynamic* DynamicDissolveMaterialInstance2;
 
 	// Material instance set on the blueprint, used with the dynamic material instance
-	UPROPERTY(EditDefaultsOnly, Category = Elim)
+	UPROPERTY(EditDefaultsOnly, Category = "Elim")
 	UMaterialInstance* DissolveMaterialInstance1;
 
-	UPROPERTY(EditDefaultsOnly, Category = Elim)
+	UPROPERTY(EditDefaultsOnly, Category = "Elim")
 	UMaterialInstance* DissolveMaterialInstance2;
 
 	UPROPERTY()
@@ -152,6 +155,10 @@ private:
 	// Grenade
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* AttachedGrenade;
+
+	// Default weapon
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	TSubclassOf<AWeapon> DefaultWeaponClass;
 
 public:
 	AWeapon* GetEquippedWeapon();
