@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 
 #include "Weapon.h"
 
@@ -11,7 +9,6 @@
 #include "ProjectC/Components/CombatComponent.h"
 #include "ProjectC/PlayerController/MannequinPlayerController.h"
 
-// Sets default values
 AWeapon::AWeapon()
 {
 	PrimaryActorTick.bCanEverTick = false;
@@ -72,7 +69,10 @@ void AWeapon::Fire(const FVector& HitTarget)
 			}
 		}
 	}
-	SpendRound();
+	if (HasAuthority())
+	{
+		SpendRound();
+	}
 }
 
 void AWeapon::SpendRound()
