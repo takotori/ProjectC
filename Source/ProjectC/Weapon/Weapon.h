@@ -71,6 +71,13 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+	// Trace end with scatter
+	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
+	float DistanceToSphere = 800.f;
+
+	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
+	float SphereRadius = 75.f;
+
 private:
 	UPROPERTY()
 	class AMannequinCharacter* WeaponOwnerCharacter;
@@ -106,13 +113,6 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	EWeaponType WeaponType;
-
-	// Trace end with scatter
-	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
-	float DistanceToSphere = 800.f;
-
-	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
-	float SphereRadius = 75.f;
 
 public:
 	FORCEINLINE void SetWeaponState(EWeaponState State) { WeaponState = State; }

@@ -10,7 +10,8 @@ class PROJECTC_API AShotgun : public AHitScanWeapon
 	GENERATED_BODY()
 
 public:
-	virtual void Fire(const FVector& HitTarget) override;
+	virtual void FireShotgun(const TArray<FVector_NetQuantize>& TraceHitTargets);
+	void ShotgunTraceEndWithScatter(const FVector& HitTarget, TArray<FVector_NetQuantize>& HitTargets);
 
 private:
 	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
