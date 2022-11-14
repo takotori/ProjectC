@@ -1,4 +1,3 @@
-
 #include "Weapon.h"
 
 #include "Casing.h"
@@ -44,7 +43,6 @@ void AWeapon::BeginPlay()
 void AWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	DOREPLIFETIME(AWeapon, Ammo);
 }
 
 void AWeapon::Fire(const FVector& HitTarget)
@@ -70,26 +68,49 @@ void AWeapon::Fire(const FVector& HitTarget)
 			}
 		}
 	}
-	if (HasAuthority())
-	{
-		SpendRound();
-	}
+	SpendRound();
 }
 
 void AWeapon::SpendRound()
 {
 	Ammo = FMath::Clamp(Ammo - 1, 0, MagCapacity);
 	SetHUDAmmo();
+	if (HasAuthority())
+	{
+		ClientUpdateAmmo(Ammo);
+	}
+	else
+	{
+		Sequence++;
+	}
 }
 
-void AWeapon::OnRep_Ammo()
+void AWeapon::ClientUpdateAmmo_Implementation(int32 ServerAmmo)
 {
-	WeaponOwnerCharacter = WeaponOwnerCharacter == nullptr? Cast<AMannequinCharacter>(GetOwner()) : WeaponOwnerCharacter;
-	if (WeaponOwnerCharacter && WeaponOwnerCharacter->GetCombat() && IsFull() && GetWeaponType() == EWeaponType::EWT_Shotgun)
+	if (HasAuthority()) return;
+	Ammo = ServerAmmo;
+	Sequence--;
+	Ammo -= Sequence;
+	SetHUDAmmo();
+}
+
+void AWeapon::ClientAddAmmo_Implementation(int32 AmmoToAdd)
+{
+	if (HasAuthority()) return;
+	Ammo = FMath::Clamp(Ammo + AmmoToAdd, 0, MagCapacity);
+	WeaponOwnerCharacter = WeaponOwnerCharacter == nullptr ? Cast<AMannequinCharacter>(GetOwner()) : WeaponOwnerCharacter;
+	if (WeaponOwnerCharacter && WeaponOwnerCharacter->GetCombat() && IsFull())
 	{
 		WeaponOwnerCharacter->GetCombat()->JumpToShotgunEnd();
 	}
 	SetHUDAmmo();
+}
+
+void AWeapon::AddAmmo(int32 AmmoToAdd)
+{
+	Ammo = FMath::Clamp(Ammo + AmmoToAdd, 0, MagCapacity);
+	SetHUDAmmo();
+	ClientAddAmmo(AmmoToAdd);
 }
 
 void AWeapon::OnRep_Owner()
@@ -100,10 +121,14 @@ void AWeapon::OnRep_Owner()
 
 void AWeapon::SetHUDAmmo()
 {
-	WeaponOwnerCharacter = WeaponOwnerCharacter == nullptr ? Cast<AMannequinCharacter>(GetOwner()) : WeaponOwnerCharacter;
+	WeaponOwnerCharacter = WeaponOwnerCharacter == nullptr
+		                       ? Cast<AMannequinCharacter>(GetOwner())
+		                       : WeaponOwnerCharacter;
 	if (WeaponOwnerCharacter)
 	{
-		WeaponOwnerController = WeaponOwnerController == nullptr ? Cast<AMannequinPlayerController>(WeaponOwnerCharacter->Controller) : WeaponOwnerController;
+		WeaponOwnerController = WeaponOwnerController == nullptr
+			                        ? Cast<AMannequinPlayerController>(WeaponOwnerCharacter->Controller)
+			                        : WeaponOwnerController;
 		if (WeaponOwnerController)
 		{
 			WeaponOwnerController->SetHUDAmmo(Ammo);
@@ -119,12 +144,6 @@ bool AWeapon::IsEmpty()
 bool AWeapon::IsFull()
 {
 	return Ammo == MagCapacity;
-}
-
-void AWeapon::AddAmmo(int32 AmmoToAdd)
-{
-	Ammo = FMath::Clamp(Ammo + AmmoToAdd, 0, MagCapacity);
-	SetHUDAmmo();
 }
 
 void AWeapon::Tick(float DeltaTime)
