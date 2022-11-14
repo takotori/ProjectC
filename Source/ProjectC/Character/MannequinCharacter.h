@@ -162,8 +162,8 @@ private:
 
 public:
 	AWeapon* GetEquippedWeapon();
-	FORCEINLINE float GetAO_Yaw() { return AO_Yaw; }
-	FORCEINLINE float GetAO_Pitch() { return AO_Pitch; }
+	FORCEINLINE float GetAO_Yaw() const { return AO_Yaw; }
+	FORCEINLINE float GetAO_Pitch() const { return AO_Pitch; }
 	FVector GetHitTarget() const;
 	FORCEINLINE bool IsElimmed() const { return bElimmed; }
 	FORCEINLINE float GetHealth() const { return Health; }
@@ -171,7 +171,7 @@ public:
 	FORCEINLINE float GetMaxHealth() const { return MaxHealth; }
 	FORCEINLINE float GetShield() const { return Shield; }
 	FORCEINLINE void SetShield(float Amount) { Shield = Amount; }
-	FORCEINLINE float GetMaxShield() { return MaxShield; }
+	FORCEINLINE float GetMaxShield() const { return MaxShield; }
 	ECombatState GetCombatState() const;
 	FORCEINLINE UCombatComponent* GetCombat() const { return Combat; }
 	FORCEINLINE UAnimMontage* GetReloadMontage() const { return ReloadMontage; }

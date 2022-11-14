@@ -1,5 +1,6 @@
 #include "MannequinPlayerController.h"
 
+#include "Components/Image.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
 #include "GameFramework/GameMode.h"
@@ -27,6 +28,31 @@ void AMannequinPlayerController::Tick(float DeltaSeconds)
 	SetHUDTime();
 	CheckTimeSync(DeltaSeconds);
 	PollInit();
+	CheckPing(DeltaSeconds);
+}
+
+void AMannequinPlayerController::CheckPing(float DeltaSeconds)
+{
+	HighPingRunningTime += DeltaSeconds;
+	if (HighPingRunningTime > CheckPingFrequency)
+	{
+		PlayerState = PlayerState == nullptr ? GetPlayerState<APlayerState>() : PlayerState;
+		if (PlayerState && PlayerState->GetCompressedPing() * 4 > HighPingThreshhold)
+		{
+			HighPingWarning();
+			PingAnimationRunningTime = 0.f;
+		}
+		HighPingRunningTime = 0.f;
+	}
+
+	if (MannequinHUD && MannequinHUD->CharacterOverlay && MannequinHUD->CharacterOverlay->HighPingAnimation && MannequinHUD->CharacterOverlay->IsAnimationPlaying(MannequinHUD->CharacterOverlay->HighPingAnimation))
+	{
+		PingAnimationRunningTime += DeltaSeconds;
+		if (PingAnimationRunningTime > HighPingDuration)
+		{
+			StopHighPingWarning();
+		}
+	}
 }
 
 void AMannequinPlayerController::PollInit()
@@ -345,6 +371,29 @@ void AMannequinPlayerController::HandleCooldown()
 	{
 		MannequinCharacter->bDisableGameplay = true;
 		MannequinCharacter->GetCombat()->FireButtonPressed(false);		
+	}
+}
+
+void AMannequinPlayerController::HighPingWarning()
+{
+	MannequinHUD = MannequinHUD == nullptr ? Cast<AMannequinHUD>(GetHUD()) : MannequinHUD;
+	if (MannequinHUD && MannequinHUD->CharacterOverlay && MannequinHUD->CharacterOverlay->HighPingImage && MannequinHUD->CharacterOverlay->HighPingAnimation)
+	{
+		MannequinHUD->CharacterOverlay->HighPingImage->SetOpacity(1.f);
+		MannequinHUD->CharacterOverlay->PlayAnimation(MannequinHUD->CharacterOverlay->HighPingAnimation, 0.f, 10);
+	}
+}
+
+void AMannequinPlayerController::StopHighPingWarning()
+{
+	MannequinHUD = MannequinHUD == nullptr ? Cast<AMannequinHUD>(GetHUD()) : MannequinHUD;
+	if (MannequinHUD && MannequinHUD->CharacterOverlay && MannequinHUD->CharacterOverlay->HighPingImage && MannequinHUD->CharacterOverlay->HighPingAnimation)
+	{
+		MannequinHUD->CharacterOverlay->HighPingImage->SetOpacity(0.f);
+		if (MannequinHUD->CharacterOverlay->IsAnimationPlaying(MannequinHUD->CharacterOverlay->HighPingAnimation))
+		{
+			MannequinHUD->CharacterOverlay->StopAnimation(MannequinHUD->CharacterOverlay->HighPingAnimation);
+		}
 	}
 }
 

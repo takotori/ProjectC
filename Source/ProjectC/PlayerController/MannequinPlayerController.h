@@ -58,6 +58,10 @@ protected:
 
 	UFUNCTION(Client, Reliable)
 	void ClientJoinMidGame(FName StateOfMatch, float Warmup, float Match, float StartingTime);
+
+	void HighPingWarning();
+	void StopHighPingWarning();
+	void CheckPing(float DeltaSeconds);
 	
 private:
 	UPROPERTY()
@@ -92,5 +96,17 @@ private:
 	int32 HUDDefeats;
 	int32 HUDGrenades;
 	int32 HUDWeaponAmmo;
-	
+
+	float HighPingRunningTime = 0.f;
+
+	float PingAnimationRunningTime = 0.f;
+
+	UPROPERTY(EditAnywhere)
+	float HighPingDuration = 5.f;
+
+	UPROPERTY(EditAnywhere)
+	float CheckPingFrequency = 10.f;
+
+	UPROPERTY(EditAnywhere)
+	float HighPingThreshhold = 50.f;
 };
