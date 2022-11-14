@@ -70,5 +70,8 @@ void UMannequinAnimInstance::NativeUpdateAnimation(float DeltaTime)
 
 	}
 	bUseFABRIK = MannequinCharacter->GetCombatState() == ECombatState::ECS_Unoccupied;
-	
+	if (MannequinCharacter->IsLocallyControlled() && MannequinCharacter->GetCombatState() == ECombatState::ECS_ThrowingGrenade)
+	{
+		bUseFABRIK = !MannequinCharacter->IsLocallyReloading();
+	}
 }
