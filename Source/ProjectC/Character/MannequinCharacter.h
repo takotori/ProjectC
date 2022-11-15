@@ -36,6 +36,9 @@ public:
 
 	void SpawnDefaultWeapon();
 	
+	UPROPERTY()
+	TMap<FName, class UBoxComponent*> HitCollisionBoxes;
+	
 protected:
 	virtual void BeginPlay() override;
 
@@ -59,10 +62,10 @@ protected:
 
 	// Hit boxes used for server-sind rewind
 	UPROPERTY(EditAnywhere)
-	class UBoxComponent* Head;
+	UBoxComponent* head;
 	
 	UPROPERTY(EditAnywhere)
-	UBoxComponent* Pelvis;
+	UBoxComponent* pelvis;
 	
 	UPROPERTY(EditAnywhere)
 	UBoxComponent* spine_02;
@@ -105,7 +108,6 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	UBoxComponent* foot_r;
-	
 
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Camera")
