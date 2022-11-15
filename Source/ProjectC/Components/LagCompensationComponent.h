@@ -4,6 +4,32 @@
 #include "Components/ActorComponent.h"
 #include "LagCompensationComponent.generated.h"
 
+USTRUCT(BlueprintType)
+struct FBoxInformation
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	FVector Location;
+
+	UPROPERTY()
+	FRotator Rotation;
+
+	UPROPERTY()
+	FVector BoxExtent;
+};
+
+USTRUCT(BlueprintType)
+struct FFramePackage
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	float Time;
+
+	TMap<FName, FBoxInformation> HitBoxInfo;
+};
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PROJECTC_API ULagCompensationComponent : public UActorComponent
 {
@@ -11,11 +37,16 @@ class PROJECTC_API ULagCompensationComponent : public UActorComponent
 
 public:	
 	ULagCompensationComponent();
+	friend class AMannequinCharacter;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 protected:
 	virtual void BeginPlay() override;
 
-public:	
-	
+private:
+	UPROPERTY()
+	AMannequinCharacter* Character;
+
+	UPROPERTY()
+	class APlayerController* Controller;
 };

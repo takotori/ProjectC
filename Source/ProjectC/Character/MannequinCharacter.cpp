@@ -10,6 +10,7 @@
 #include "ProjectC/ProjectC.h"
 #include "ProjectC/Components//BuffComponent.h"
 #include "ProjectC/Components/CombatComponent.h"
+#include "ProjectC/Components/LagCompensationComponent.h"
 #include "ProjectC/GameMode/MatchGameMode.h"
 #include "ProjectC/PlayerController/MannequinPlayerController.h"
 #include "ProjectC/PlayerState/MannequinPlayerState.h"
@@ -47,6 +48,8 @@ AMannequinCharacter::AMannequinCharacter()
 	AttachedGrenade = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Attached Grenade"));
 	AttachedGrenade->SetupAttachment(GetMesh(), FName("GrenadeSocket"));
 	AttachedGrenade->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	LagCompensation = CreateDefaultSubobject<ULagCompensationComponent>(TEXT("Lag Compensation"));
 	
 	// Hit boxes for server-side rewind
 	Head = CreateDefaultSubobject<UBoxComponent>(TEXT("head"));
@@ -112,7 +115,6 @@ AMannequinCharacter::AMannequinCharacter()
 	foot_r = CreateDefaultSubobject<UBoxComponent>(TEXT("foot_r"));
 	foot_r->SetupAttachment(GetMesh(), FName("foot_r"));
 	foot_r->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-
 }
 
 void AMannequinCharacter::BeginPlay()
@@ -174,6 +176,14 @@ void AMannequinCharacter::PostInitializeComponents()
 		Buff->Character = this;
 		Buff->SetInitialSpeeds(GetCharacterMovement()->MaxWalkSpeed, GetCharacterMovement()->MaxWalkSpeedCrouched);
 		Buff->SetInitialJumpVelocity(GetCharacterMovement()->JumpZVelocity);
+	}
+	if (LagCompensation)
+	{
+		LagCompensation->Character = this;
+		if (Controller)
+		{
+			LagCompensation->Controller = Cast<APlayerController>(Controller);
+		}
 	}
 }
 
