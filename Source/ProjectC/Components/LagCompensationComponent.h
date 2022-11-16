@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "ProjectC/Character/MannequinCharacter.h"
 #include "LagCompensationComponent.generated.h"
 
 USTRUCT(BlueprintType)
@@ -62,8 +63,18 @@ public:
 	                                   const FVector_NetQuantize& TraceStart,
 	                                   const FVector_NetQuantize& HitLocation);
 
+	UFUNCTION(Server, Reliable)
+	void ServerScoreRequest(
+		AMannequinCharacter* HitCharacter,
+		const FVector_NetQuantize& TraceStart,
+		const FVector_NetQuantize& HitLocation,
+		float HitTime,
+		class AWeapon* DamageCauser
+	);
+
 protected:
 	virtual void BeginPlay() override;
+	void SaveFramePackage();
 	void SaveFramePackage(FFramePackage& Package);
 	FFramePackage InterpBetweenFrames(const FFramePackage& OlderFrame, const FFramePackage& YoungerFrame,
 	                                  float HitTime);

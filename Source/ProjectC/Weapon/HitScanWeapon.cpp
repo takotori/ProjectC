@@ -4,6 +4,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "ProjectC/Character/MannequinCharacter.h"
+#include "ProjectC/Components/LagCompensationComponent.h"
+#include "ProjectC/PlayerController/MannequinPlayerController.h"
 
 void AHitScanWeapon::Fire(const FVector& HitTarget)
 {
@@ -18,21 +20,40 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 	{
 		FTransform SocketTransform = MuzzleFlashSocket->GetSocketTransform(GetWeaponMesh());
 		FVector Start = SocketTransform.GetLocation();
-		
+
 		FHitResult FireHit;
 		WeaponTraceHit(Start, HitTarget, FireHit);
 
 		AMannequinCharacter* MannequinCharacter = Cast<AMannequinCharacter>(FireHit.GetActor());
-		if (MannequinCharacter && HasAuthority() && InstigatorController)
+		if (MannequinCharacter && InstigatorController)
 		{
-			UGameplayStatics::ApplyDamage(
-				MannequinCharacter,
-				Damage,
-				InstigatorController,
-				this,
-				UDamageType::StaticClass()
-			);
+			if (HasAuthority() && !bUseServerSideRewind)
+			{
+				UGameplayStatics::ApplyDamage(
+					MannequinCharacter,
+					Damage,
+					InstigatorController,
+					this,
+					UDamageType::StaticClass()
+				);
+			}
+			if (!HasAuthority() && bUseServerSideRewind)
+			{
+				WeaponOwnerCharacter = WeaponOwnerCharacter == nullptr ? Cast<AMannequinCharacter>(OwnerPawn) : WeaponOwnerCharacter;
+				WeaponOwnerController = WeaponOwnerController == nullptr ? Cast<AMannequinPlayerController>(InstigatorController) : WeaponOwnerController;
+				if (WeaponOwnerCharacter && WeaponOwnerController && WeaponOwnerCharacter->GetLagCompensation())
+				{
+					WeaponOwnerCharacter->GetLagCompensation()->ServerScoreRequest(
+						MannequinCharacter,
+						Start,
+						HitTarget,
+						WeaponOwnerController->GetServerTime() - WeaponOwnerController->SingleTripTime,
+						this
+					);
+				}
+			}
 		}
+
 		if (ImpactParticles)
 		{
 			UGameplayStatics::SpawnEmitterAtLocation(

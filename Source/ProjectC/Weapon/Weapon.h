@@ -71,6 +71,9 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+	UPROPERTY(EditAnywhere)
+	float Damage = 20.f;
+	
 	// Trace end with scatter
 	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
 	float DistanceToSphere = 800.f;
@@ -78,13 +81,16 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
 	float SphereRadius = 75.f;
 
-private:
+	UPROPERTY(EditAnywhere)
+	bool bUseServerSideRewind = false;
+
 	UPROPERTY()
 	class AMannequinCharacter* WeaponOwnerCharacter;
 
 	UPROPERTY()
 	class AMannequinPlayerController* WeaponOwnerController;
 	
+private:	
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Property")
 	USkeletalMeshComponent* WeaponMesh;
 
@@ -128,4 +134,5 @@ public:
 	FORCEINLINE int32 GetAmmo() const { return Ammo; }
 	FORCEINLINE int32 GetMagCapacity() const { return MagCapacity; }
 	FORCEINLINE EWeaponType GetWeaponType() const { return WeaponType; }
+	FORCEINLINE float GetDamage() const { return Damage; }
 };
