@@ -30,6 +30,9 @@ struct FFramePackage
 
 	UPROPERTY()
 	TMap<FName, FBoxInformation> HitBoxInfo;
+
+	UPROPERTY()
+	AMannequinCharacter* Character;
 };
 
 USTRUCT(BlueprintType)
@@ -45,6 +48,19 @@ struct FServerSideRewindResult
 	bool bHeadShot;
 };
 
+USTRUCT(BlueprintType)
+struct FShotgunServerSideRewindResult
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	TMap<AMannequinCharacter*, uint32> Headshots;
+
+	UPROPERTY()
+	TMap<AMannequinCharacter*, uint32> Bodyshots;
+};
+
+
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class PROJECTC_API ULagCompensationComponent : public UActorComponent
 {
@@ -53,13 +69,17 @@ class PROJECTC_API ULagCompensationComponent : public UActorComponent
 public:
 	ULagCompensationComponent();
 	friend class AMannequinCharacter;
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
+	virtual void TickComponent(float DeltaTime,
+	                           ELevelTick TickType,
 	                           FActorComponentTickFunction* ThisTickFunction) override;
 	void ShowFramePackage(const FFramePackage& Package, const FColor& Color);
 	FServerSideRewindResult ServerSideRewind(class AMannequinCharacter* HitCharacter,
-	                      const FVector_NetQuantize& TraceStart,
-	                      const FVector_NetQuantize& HitLocation, float HitTime);
-	FServerSideRewindResult ConfirmHit(const FFramePackage& Package, AMannequinCharacter* HitCharacter,
+	                                         const FVector_NetQuantize& TraceStart,
+	                                         const FVector_NetQuantize& HitLocation,
+	                                         float HitTime);
+	//todo refactor away hitcharacter as it is in the package
+	FServerSideRewindResult ConfirmHit(const FFramePackage& Package,
+	                                   AMannequinCharacter* HitCharacter,
 	                                   const FVector_NetQuantize& TraceStart,
 	                                   const FVector_NetQuantize& HitLocation);
 
@@ -82,6 +102,21 @@ protected:
 	void MoveBoxes(AMannequinCharacter* HitCharacter, const FFramePackage& Package);
 	void ResetBoxes(AMannequinCharacter* HitCharacter, const FFramePackage& Package);
 	void EnableCharacterMeshCollision(AMannequinCharacter* HitCharacter, ECollisionEnabled::Type CollisionEnabled);
+	FFramePackage GetFrameToCheck(AMannequinCharacter* HitCharacter, float HitTime);
+
+	// Shotgun
+	FShotgunServerSideRewindResult ShotgunServerSideRewind(
+		const TArray<AMannequinCharacter*>& HitCharacters,
+		const FVector_NetQuantize& TraceStart,
+		const TArray<FVector_NetQuantize>& HitLocations,
+		float HitTime
+	);
+
+	FShotgunServerSideRewindResult ShotgunConfirmHit(
+		const TArray<FFramePackage>& FramePackages,
+		const FVector_NetQuantize& TraceStart,
+		const TArray<FVector_NetQuantize>& HitLocations
+	);
 
 private:
 	UPROPERTY()
