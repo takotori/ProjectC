@@ -5,6 +5,8 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "ProjectC/Character/MannequinCharacter.h"
+#include "ProjectC/Components/LagCompensationComponent.h"
+#include "ProjectC/PlayerController/MannequinPlayerController.h"
 
 void AShotgun::FireShotgun(const TArray<FVector_NetQuantize>& TraceHitTargets)
 {
@@ -12,7 +14,7 @@ void AShotgun::FireShotgun(const TArray<FVector_NetQuantize>& TraceHitTargets)
 	APawn* OwnerPawn = Cast<APawn>(GetOwner());
 	if (OwnerPawn == nullptr) return;
 	AController* InstigatorController = OwnerPawn->GetController();
-	
+
 	const USkeletalMeshSocket* MuzzleFlashSocket = GetWeaponMesh()->GetSocketByName("MuzzleFlash");
 	if (MuzzleFlashSocket)
 	{
@@ -57,17 +59,35 @@ void AShotgun::FireShotgun(const TArray<FVector_NetQuantize>& TraceHitTargets)
 				}
 			}
 		}
-
+		TArray<AMannequinCharacter*> HitCharacters;
 		for (auto HitPair : HitMap)
 		{
-			if (HitPair.Key && HasAuthority() && InstigatorController)
+			if (HitPair.Key && InstigatorController)
 			{
-				UGameplayStatics::ApplyDamage(
-					HitPair.Key,
-					Damage * HitPair.Value,
-					InstigatorController,
-					this,
-					UDamageType::StaticClass()
+				if (HasAuthority() && !bUseServerSideRewind)
+				{
+					UGameplayStatics::ApplyDamage(
+						HitPair.Key,
+						Damage * HitPair.Value,
+						InstigatorController,
+						this,
+						UDamageType::StaticClass()
+					);
+				}
+				HitCharacters.Add(HitPair.Key);
+			}
+		}
+		if (!HasAuthority() && bUseServerSideRewind)
+		{
+			WeaponOwnerCharacter = WeaponOwnerCharacter == nullptr ? Cast<AMannequinCharacter>(OwnerPawn) : WeaponOwnerCharacter;
+			WeaponOwnerController = WeaponOwnerController == nullptr ? Cast<AMannequinPlayerController>(InstigatorController) : WeaponOwnerController;
+			if (WeaponOwnerCharacter && WeaponOwnerController && WeaponOwnerCharacter->GetLagCompensation() && WeaponOwnerCharacter->IsLocallyControlled())
+			{
+				WeaponOwnerCharacter->GetLagCompensation()->ShotgunServerScoreRequest(
+					HitCharacters,
+					Start,
+					TraceHitTargets,
+					WeaponOwnerController->GetServerTime() - WeaponOwnerController->SingleTripTime
 				);
 			}
 		}
@@ -83,7 +103,7 @@ void AShotgun::ShotgunTraceEndWithScatter(const FVector& HitTarget, TArray<FVect
 	const FVector TraceStart = SocketTransform.GetLocation();
 	const FVector ToTargetNormalized = (HitTarget - TraceStart).GetSafeNormal();
 	const FVector SphereCenter = TraceStart + ToTargetNormalized * DistanceToSphere;
-	
+
 	for (uint32 i = 0; i < NumberOfPellets; i++)
 	{
 		const FVector RandVec = UKismetMathLibrary::RandomUnitVector() * FMath::FRandRange(0.f, SphereRadius);

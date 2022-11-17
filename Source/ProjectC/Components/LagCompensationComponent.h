@@ -77,6 +77,13 @@ public:
 	                                         const FVector_NetQuantize& TraceStart,
 	                                         const FVector_NetQuantize& HitLocation,
 	                                         float HitTime);
+	FShotgunServerSideRewindResult ShotgunServerSideRewind(
+		const TArray<AMannequinCharacter*>& HitCharacters,
+		const FVector_NetQuantize& TraceStart,
+		const TArray<FVector_NetQuantize>& HitLocations,
+		float HitTime
+	);
+
 	//todo refactor away hitcharacter as it is in the package
 	FServerSideRewindResult ConfirmHit(const FFramePackage& Package,
 	                                   AMannequinCharacter* HitCharacter,
@@ -92,6 +99,14 @@ public:
 		class AWeapon* DamageCauser
 	);
 
+	UFUNCTION(Server, Reliable)
+	void ShotgunServerScoreRequest(
+		const TArray<AMannequinCharacter*>& HitCharacters,
+		const FVector_NetQuantize& TraceStart,
+		const TArray<FVector_NetQuantize>& HitLocations,
+		float HitTime
+	);
+
 protected:
 	virtual void BeginPlay() override;
 	void SaveFramePackage();
@@ -105,13 +120,6 @@ protected:
 	FFramePackage GetFrameToCheck(AMannequinCharacter* HitCharacter, float HitTime);
 
 	// Shotgun
-	FShotgunServerSideRewindResult ShotgunServerSideRewind(
-		const TArray<AMannequinCharacter*>& HitCharacters,
-		const FVector_NetQuantize& TraceStart,
-		const TArray<FVector_NetQuantize>& HitLocations,
-		float HitTime
-	);
-
 	FShotgunServerSideRewindResult ShotgunConfirmHit(
 		const TArray<FFramePackage>& FramePackages,
 		const FVector_NetQuantize& TraceStart,
