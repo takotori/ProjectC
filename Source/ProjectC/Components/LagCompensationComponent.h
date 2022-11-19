@@ -73,10 +73,13 @@ public:
 	                           ELevelTick TickType,
 	                           FActorComponentTickFunction* ThisTickFunction) override;
 	void ShowFramePackage(const FFramePackage& Package, const FColor& Color);
+
+	// Hitscan
 	FServerSideRewindResult ServerSideRewind(class AMannequinCharacter* HitCharacter,
 	                                         const FVector_NetQuantize& TraceStart,
 	                                         const FVector_NetQuantize& HitLocation,
 	                                         float HitTime);
+	// Shotgun
 	FShotgunServerSideRewindResult ShotgunServerSideRewind(
 		const TArray<AMannequinCharacter*>& HitCharacters,
 		const FVector_NetQuantize& TraceStart,
@@ -84,11 +87,13 @@ public:
 		float HitTime
 	);
 
-	//todo refactor away hitcharacter as it is in the package
-	FServerSideRewindResult ConfirmHit(const FFramePackage& Package,
-	                                   AMannequinCharacter* HitCharacter,
-	                                   const FVector_NetQuantize& TraceStart,
-	                                   const FVector_NetQuantize& HitLocation);
+	// Projectile
+	FServerSideRewindResult ProjectileServerSideRewind(
+		AMannequinCharacter* HitCharacter,
+		const FVector_NetQuantize& TraceStart,
+		const FVector_NetQuantize100& InitialVelocity,
+		float HitTime
+	);
 
 	UFUNCTION(Server, Reliable)
 	void ServerScoreRequest(
@@ -97,6 +102,14 @@ public:
 		const FVector_NetQuantize& HitLocation,
 		float HitTime,
 		class AWeapon* DamageCauser
+	);
+
+	UFUNCTION(Server, Reliable)
+	void ProjectileServerScoreRequest(
+		AMannequinCharacter* HitCharacter,
+		const FVector_NetQuantize& TraceStart,
+		const FVector_NetQuantize100& InitialVelocity,
+		float HitTime
 	);
 
 	UFUNCTION(Server, Reliable)
@@ -119,11 +132,27 @@ protected:
 	void EnableCharacterMeshCollision(AMannequinCharacter* HitCharacter, ECollisionEnabled::Type CollisionEnabled);
 	FFramePackage GetFrameToCheck(AMannequinCharacter* HitCharacter, float HitTime);
 
+	//todo refactor away hitcharacter as it is in the package
+	// Hitscan
+	FServerSideRewindResult ConfirmHit(const FFramePackage& Package,
+	                                   AMannequinCharacter* HitCharacter,
+	                                   const FVector_NetQuantize& TraceStart,
+	                                   const FVector_NetQuantize& HitLocation);
+
 	// Shotgun
 	FShotgunServerSideRewindResult ShotgunConfirmHit(
 		const TArray<FFramePackage>& FramePackages,
 		const FVector_NetQuantize& TraceStart,
 		const TArray<FVector_NetQuantize>& HitLocations
+	);
+
+	// Projectile
+	FServerSideRewindResult ProjectileConfirmHit(
+		const FFramePackage& Package,
+		AMannequinCharacter* HitCharacter,
+		const FVector_NetQuantize& TraceStart,
+		const FVector_NetQuantize100& InitialVelocity,
+		float HitTime
 	);
 
 private:
