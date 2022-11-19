@@ -11,7 +11,7 @@
 
 AWeapon::AWeapon()
 {
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 	bReplicates = true;
 
 	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMesh"));
@@ -43,6 +43,7 @@ void AWeapon::BeginPlay()
 void AWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME_CONDITION(AWeapon, bUseServerSideRewind, COND_OwnerOnly)
 }
 
 void AWeapon::Fire(const FVector& HitTarget)
@@ -146,11 +147,6 @@ bool AWeapon::IsFull()
 	return Ammo == MagCapacity;
 }
 
-void AWeapon::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-}
-
 FVector AWeapon::TraceEndWithScatter(const FVector& HitTarget)
 {
 	const USkeletalMeshSocket* MuzzleFlashSocket = GetWeaponMesh()->GetSocketByName("MuzzleFlash");
@@ -171,4 +167,29 @@ FVector AWeapon::TraceEndWithScatter(const FVector& HitTarget)
 	//               true);
 
 	return FVector(TraceStart + ToEndLoc * TRACE_LENGTH / ToEndLoc.Size());
+}
+
+
+void AWeapon::OnPingTooHigh(bool bPingTooHigh)
+{
+	bUseServerSideRewind = !bPingTooHigh;
+}
+
+void AWeapon::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	PollInit();
+}
+
+void AWeapon::PollInit()
+{
+	if (WeaponOwnerController == nullptr && HasAuthority() && WeaponOwnerCharacter->Controller)
+	{
+		WeaponOwnerController = WeaponOwnerController == nullptr ? Cast<AMannequinPlayerController>(WeaponOwnerCharacter->Controller) : WeaponOwnerController;
+		if (WeaponOwnerController && !WeaponOwnerController->HighPingDelegate.IsBound())
+		{
+			UE_LOG(LogTemp, Warning, TEXT("asdf"))
+			WeaponOwnerController->HighPingDelegate.AddDynamic(this, &AWeapon::OnPingTooHigh);
+		}
+	}
 }

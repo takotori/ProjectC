@@ -67,6 +67,8 @@ public:
 	bool bUseScatter = false;
 
 	FVector TraceEndWithScatter(const FVector& HitTarget);
+	
+	void PollInit();
 
 protected:
 	virtual void BeginPlay() override;
@@ -81,7 +83,7 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
 	float SphereRadius = 75.f;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(Replicated, EditAnywhere)
 	bool bUseServerSideRewind = false;
 
 	UPROPERTY()
@@ -89,6 +91,9 @@ protected:
 
 	UPROPERTY()
 	class AMannequinPlayerController* WeaponOwnerController;
+
+	UFUNCTION()
+	void OnPingTooHigh(bool bPingTooHigh);
 	
 private:	
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Property")

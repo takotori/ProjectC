@@ -4,6 +4,8 @@
 #include "GameFramework/PlayerController.h"
 #include "MannequinPlayerController.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHighPingDelegate, bool, bPingTooHigh);
+
 UCLASS()
 class PROJECTC_API AMannequinPlayerController : public APlayerController
 {
@@ -27,6 +29,8 @@ public:
 	void OnMatchStateSet(FName State);
 
 	float SingleTripTime = 0.f;
+
+	FHighPingDelegate HighPingDelegate;
 	
 protected:
 	virtual void BeginPlay() override;
@@ -108,6 +112,9 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	float CheckPingFrequency = 10.f;
+
+	UFUNCTION(Server, Reliable)
+	void ServerReportPingStatus(bool bHighPing);
 
 	UPROPERTY(EditAnywhere)
 	float HighPingThreshhold = 50.f;
