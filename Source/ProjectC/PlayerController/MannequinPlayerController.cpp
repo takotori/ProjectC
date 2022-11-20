@@ -40,7 +40,6 @@ void AMannequinPlayerController::CheckPing(float DeltaSeconds)
 		PlayerState = PlayerState == nullptr ? GetPlayerState<APlayerState>() : PlayerState;
 		if (PlayerState && PlayerState->GetCompressedPing() * 4 > HighPingThreshhold)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Ping: %d"), PlayerState->GetCompressedPing() * 4)
 			HighPingWarning();
 			ServerReportPingStatus(true);
 			PingAnimationRunningTime = 0.f;

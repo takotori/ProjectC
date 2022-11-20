@@ -188,7 +188,6 @@ void AWeapon::PollInit()
 		WeaponOwnerController = WeaponOwnerController == nullptr ? Cast<AMannequinPlayerController>(WeaponOwnerCharacter->Controller) : WeaponOwnerController;
 		if (WeaponOwnerController && !WeaponOwnerController->HighPingDelegate.IsBound())
 		{
-			UE_LOG(LogTemp, Warning, TEXT("asdf"))
 			WeaponOwnerController->HighPingDelegate.AddDynamic(this, &AWeapon::OnPingTooHigh);
 		}
 	}
