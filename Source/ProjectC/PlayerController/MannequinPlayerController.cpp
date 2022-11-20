@@ -13,6 +13,7 @@
 #include "ProjectC/HUD/Announcement.h"
 #include "ProjectC/HUD/CharacterOverlay.h"
 #include "ProjectC/HUD/MannequinHUD.h"
+#include "ProjectC/HUD/PauseMenu.h"
 #include "ProjectC/PlayerState/MannequinPlayerState.h"
 
 void AMannequinPlayerController::BeginPlay()
@@ -57,6 +58,27 @@ void AMannequinPlayerController::CheckPing(float DeltaSeconds)
 		if (PingAnimationRunningTime > HighPingDuration)
 		{
 			StopHighPingWarning();
+		}
+	}
+}
+
+void AMannequinPlayerController::ShowPauseMenu()
+{
+	if (PauseMenuWidget == nullptr) return;
+	if (PauseMenu == nullptr)
+	{
+		PauseMenu = CreateWidget<UPauseMenu>(this, PauseMenuWidget);
+	}
+	if (PauseMenu)
+	{
+		bPauseMenuOpen = !bPauseMenuOpen;
+		if (bPauseMenuOpen)
+		{
+			PauseMenu->MenuSetup();
+		}
+		else
+		{
+			PauseMenu->MenuTearDown();
 		}
 	}
 }
@@ -116,6 +138,13 @@ void AMannequinPlayerController::OnPossess(APawn* InPawn)
 	{
 		SetHUDHealth(MannequinCharacter->GetHealth(), MannequinCharacter->GetMaxHealth());
 	}
+}
+
+void AMannequinPlayerController::SetupInputComponent()
+{
+	Super::SetupInputComponent();
+	if (InputComponent == nullptr) return;
+	InputComponent->BindAction("Quit", IE_Pressed, this, &AMannequinPlayerController::ShowPauseMenu);
 }
 
 void AMannequinPlayerController::SetHUDHealth(float Health, float MaxHealth)

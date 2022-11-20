@@ -34,9 +34,9 @@ public:
 	
 protected:
 	virtual void BeginPlay() override;
+	virtual void SetupInputComponent() override;
 	void CheckTimeSync(float DeltaSeconds);
 	void SetHUDTime();
-	
 	void PollInit();
 	
 	// Sync time between client and server
@@ -68,10 +68,21 @@ protected:
 	void HighPingWarning();
 	void StopHighPingWarning();
 	void CheckPing(float DeltaSeconds);
+
+	void ShowPauseMenu();
 	
 private:
 	UPROPERTY()
 	class AMannequinHUD* MannequinHUD;
+
+	// Return to main menu
+	UPROPERTY(EditAnywhere, Category = HUD)
+	TSubclassOf<class UUserWidget> PauseMenuWidget;
+
+	UPROPERTY()
+	class UPauseMenu* PauseMenu;
+
+	bool bPauseMenuOpen = false;
 
 	float LevelStartingTime = 0.f; 
 	float MatchTime = 0.f;
