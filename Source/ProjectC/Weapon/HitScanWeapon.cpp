@@ -49,8 +49,7 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 						MannequinCharacter,
 						Start,
 						HitTarget,
-						WeaponOwnerController->GetServerTime() - WeaponOwnerController->SingleTripTime,
-						this
+						WeaponOwnerController->GetServerTime() - WeaponOwnerController->SingleTripTime
 					);
 				}
 			}
