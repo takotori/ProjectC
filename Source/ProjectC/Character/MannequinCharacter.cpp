@@ -12,6 +12,7 @@
 #include "ProjectC/Components/CombatComponent.h"
 #include "ProjectC/Components/LagCompensationComponent.h"
 #include "ProjectC/GameMode/MatchGameMode.h"
+#include "ProjectC/GameState/MannequinGameState.h"
 #include "ProjectC/PlayerController/MannequinPlayerController.h"
 #include "ProjectC/PlayerState/MannequinPlayerState.h"
 #include "ProjectC/Weapon/Weapon.h"
@@ -269,19 +270,14 @@ void AMannequinCharacter::PlayThrowGrenadeMontage()
 	}
 }
 
-void AMannequinCharacter::Elim()
+void AMannequinCharacter::Elim(bool bPlayerLeftGame)
 {
-	MulticastElim();
-	GetWorldTimerManager().SetTimer(
-		ElimTimer,
-		this,
-		&AMannequinCharacter::ElimTimerFinished,
-		ElimDelay
-	);
+	MulticastElim(bPlayerLeftGame);
 }
 
-void AMannequinCharacter::MulticastElim_Implementation()
+void AMannequinCharacter::MulticastElim_Implementation(bool bPlayerLeftGame)
 {
+	bLeftGame = bPlayerLeftGame;
 	bElimmed = true;
 	PlayElimMontage();
 
@@ -313,15 +309,36 @@ void AMannequinCharacter::MulticastElim_Implementation()
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetEquippedWeapon()->Destroy();
+
+	GetWorldTimerManager().SetTimer(
+		ElimTimer,
+		this,
+		&AMannequinCharacter::ElimTimerFinished,
+		ElimDelay
+	);
 }
 
 void AMannequinCharacter::ElimTimerFinished()
 {
 	AMatchGameMode* MatchGameMode = GetWorld()->GetAuthGameMode<AMatchGameMode>();
-	if (MatchGameMode)
+	if (MatchGameMode && !bLeftGame)
 	{
 		MatchGameMode->RequestRespawn(this, Controller);
 	}
+	if (bLeftGame && IsLocallyControlled())
+	{
+		OnLeftGame.Broadcast();
+	}
+}
+
+void AMannequinCharacter::ServerLeaveGame_Implementation()
+{
+	AMatchGameMode* MatchGameMode = GetWorld()->GetAuthGameMode<AMatchGameMode>();
+	MannequinPlayerState = MannequinPlayerState == nullptr ? GetPlayerState<AMannequinPlayerState>() : MannequinPlayerState;
+	if (MatchGameMode && MannequinPlayerState)
+	{
+		MatchGameMode->PlayerLeftGame(MannequinPlayerState);
+	}	
 }
 
 void AMannequinCharacter::PlayHitReactMontage()

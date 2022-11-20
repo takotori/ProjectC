@@ -22,6 +22,8 @@ public:
 	                              AMannequinPlayerController* AttackerController);
 
 	virtual void RequestRespawn(class ACharacter* EliminatedCharacter, AController* EliminatedController);
+
+	void PlayerLeftGame(class AMannequinPlayerState* PlayerLeaving);
 	
 	UPROPERTY(EditDefaultsOnly)
 	float MatchTime = 120.f;

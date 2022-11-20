@@ -4,6 +4,7 @@
 #include "MultiplayerSessionsSubsystem.h"
 #include "Components/Button.h"
 #include "GameFramework/GameModeBase.h"
+#include "ProjectC/Character/MannequinCharacter.h"
 
 void UPauseMenu::MenuSetup()
 {
@@ -70,15 +71,6 @@ void UPauseMenu::MenuTearDown()
 	}
 }
 
-void UPauseMenu::ReturnButtonClicked()
-{
-	ReturnButton->SetIsEnabled(false);
-	if (MultiplayerSessionsSubsystem)
-	{
-		MultiplayerSessionsSubsystem->DestroySession();
-	}
-}
-
 void UPauseMenu::OnDestroySession(bool bWasSuccessful)
 {
 	if (!bWasSuccessful)
@@ -102,5 +94,36 @@ void UPauseMenu::OnDestroySession(bool bWasSuccessful)
 				PlayerController->ClientReturnToMainMenuWithTextReason(FText());
 			}
 		}
+	}
+}
+
+void UPauseMenu::ReturnButtonClicked()
+{
+	ReturnButton->SetIsEnabled(false);
+	UWorld* World = GetWorld();
+	if (World)
+	{
+		APlayerController* FirstPlayerController = World->GetFirstPlayerController();
+		if (FirstPlayerController)
+		{
+			AMannequinCharacter* MannequinCharacter = Cast<AMannequinCharacter>(FirstPlayerController->GetPawn());
+			if (MannequinCharacter)
+			{
+				MannequinCharacter->ServerLeaveGame();
+				MannequinCharacter->OnLeftGame.AddDynamic(this, &UPauseMenu::OnPlayerLeftGame);
+			}
+			else
+			{
+				ReturnButton->SetIsEnabled(true);
+			}
+		}
+	}	
+}
+
+void UPauseMenu::OnPlayerLeftGame()
+{
+	if (MultiplayerSessionsSubsystem)
+	{
+		MultiplayerSessionsSubsystem->DestroySession();
 	}
 }

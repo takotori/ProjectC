@@ -96,7 +96,7 @@ void AMatchGameMode::PlayerEliminated(AMannequinCharacter* EliminatedCharacter,
 	
 	if (EliminatedCharacter)
 	{
-		EliminatedCharacter->Elim();
+		EliminatedCharacter->Elim(false);
 	}
 }
 
@@ -114,5 +114,20 @@ void AMatchGameMode::RequestRespawn(ACharacter* EliminatedCharacter, AController
 		UGameplayStatics::GetAllActorsOfClass(this, APlayerStart::StaticClass(), PlayerStarts);
 		int32 Selection = FMath::RandRange(0, PlayerStarts.Num() - 1);
 		RestartPlayerAtPlayerStart(EliminatedController, PlayerStarts[Selection]);
+	}
+}
+
+void AMatchGameMode::PlayerLeftGame(AMannequinPlayerState* PlayerLeaving)
+{
+	if (PlayerLeaving == nullptr) return;
+	AMannequinGameState* MannequinGameState = GetGameState<AMannequinGameState>();
+	if (MannequinGameState && MannequinGameState->TopScoringPlayers.Contains(PlayerLeaving))
+	{
+		MannequinGameState->TopScoringPlayers.Remove(PlayerLeaving);
+	}
+	AMannequinCharacter* CharacterLeaving = Cast<AMannequinCharacter>(PlayerLeaving->GetPawn());
+	if (CharacterLeaving)
+	{
+		CharacterLeaving->Elim(true);
 	}
 }

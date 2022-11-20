@@ -7,6 +7,8 @@
 #include "ProjectC/Types/CombatState.h"
 #include "MannequinCharacter.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnLeftGame);
+
 UCLASS()
 class PROJECTC_API AMannequinCharacter : public ACharacter, public IInteractWithCrosshairsInterface
 {
@@ -22,10 +24,10 @@ public:
 	void PlayReloadMontage();
 	void PlayElimMontage();
 	void PlayThrowGrenadeMontage();
-	void Elim();
+	void Elim(bool bPlayerLeftGame);
 
 	UFUNCTION(NetMulticast, Reliable)
-	void MulticastElim();
+	void MulticastElim(bool bPlayerLeftGame);
 
 	UPROPERTY(Replicated)
 	bool bDisableGameplay = false;
@@ -35,9 +37,14 @@ public:
 	void UpdateHUDAmmo();
 
 	void SpawnDefaultWeapon();
-	
+
 	UPROPERTY()
 	TMap<FName, class UBoxComponent*> HitCollisionBoxes;
+
+	UFUNCTION(Server, Reliable)
+	void ServerLeaveGame();
+
+	FOnLeftGame OnLeftGame;
 	
 protected:
 	virtual void BeginPlay() override;
@@ -63,16 +70,16 @@ protected:
 	// Hit boxes used for server-sind rewind
 	UPROPERTY(EditAnywhere)
 	UBoxComponent* head;
-	
+
 	UPROPERTY(EditAnywhere)
 	UBoxComponent* pelvis;
-	
+
 	UPROPERTY(EditAnywhere)
 	UBoxComponent* spine_02;
 
 	UPROPERTY(EditAnywhere)
 	UBoxComponent* spine_03;
-	
+
 	UPROPERTY(EditAnywhere)
 	UBoxComponent* upperarm_l;
 
@@ -148,7 +155,7 @@ private:
 	// Player HP
 	UPROPERTY(ReplicatedUsing = OnRep_Health, VisibleAnywhere, Category = "Player Stats")
 	float Health = 100.f;
-	
+
 	UPROPERTY(EditAnywhere, Category = "Player Stats")
 	float MaxHealth = 100.f;
 
@@ -158,7 +165,7 @@ private:
 	// Player Shield
 	UPROPERTY(ReplicatedUsing = OnRep_Shield, EditAnywhere, Category = "Player Stats")
 	float Shield = 25.f;
-	
+
 	UPROPERTY(EditAnywhere, Category = "Player Stats")
 	float MaxShield = 100.f;
 
@@ -176,6 +183,8 @@ private:
 	float ElimDelay = 3.f;
 
 	void ElimTimerFinished();
+
+	bool bLeftGame = false;
 
 	// Dissolve effect
 	UPROPERTY(VisibleAnywhere)
