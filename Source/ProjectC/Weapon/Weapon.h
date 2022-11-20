@@ -75,6 +75,9 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	float Damage = 20.f;
+
+	UPROPERTY(EditAnywhere)
+	float HeadShotDamage = 40.f;
 	
 	// Trace end with scatter
 	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
@@ -140,4 +143,5 @@ public:
 	FORCEINLINE int32 GetMagCapacity() const { return MagCapacity; }
 	FORCEINLINE EWeaponType GetWeaponType() const { return WeaponType; }
 	FORCEINLINE float GetDamage() const { return Damage; }
+	FORCEINLINE float GetHeadDamage() const { return HeadShotDamage; }
 };
