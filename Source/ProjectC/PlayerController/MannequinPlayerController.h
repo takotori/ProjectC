@@ -15,18 +15,23 @@ public:
 	void SetHUDHealth(float Health, float MaxHealth);
 	void SetHUDShield(float Shield, float MaxShield);
 	void SetHUDScore(float Score);
+	void SetHUDRedTeamScore(int32 RedScore);
+	void SetHUDBlueTeamScore(int32 BlueScore);
+	
 	void SetHUDDefeats(int32 Defeats);
 	void SetHUDAmmo(int32 Ammo);
 	void SetHUDMatchCountdown(float CountdownTime);
 	void SetHUDAnnouncementCountdown(float CountdownTime);
 	void SetHUDGrenades(int32 Grenades);
+	void HideTeamScores();
+	void InitTeamScores();
 	virtual void OnPossess(APawn* InPawn) override;
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	
 	virtual float GetServerTime(); // Synced with server world clock
 	virtual void ReceivedPlayer() override; // Sync with server clock as soon as possible
-	void OnMatchStateSet(FName State);
+	void OnMatchStateSet(FName State, bool bTeamsMatch = false);
 
 	float SingleTripTime = 0.f;
 
@@ -56,7 +61,7 @@ protected:
 
 	float TimeSyncRunningTime = 0.f;
 
-	void HandleMatchHasStarted();
+	void HandleMatchHasStarted(bool bTeamsMatch = false);
 	void HandleCooldown();
 
 	UFUNCTION(Server, Reliable)
@@ -70,6 +75,12 @@ protected:
 	void CheckPing(float DeltaSeconds);
 
 	void ShowPauseMenu();
+
+	UPROPERTY(ReplicatedUsing = OnRep_ShowTeamScores)
+	bool bShowTeamScores = false;
+
+	UFUNCTION()
+	void OnRep_ShowTeamScores();
 	
 private:
 	UPROPERTY()
@@ -104,6 +115,7 @@ private:
 	bool bInitializeGrenades = false;
 	bool bInitializeShield = false;
 	bool bInitializeAmmo = false;
+	bool bInitializeTeamScores = false;
 	
 	float HUDHealth;
 	float HUDMaxHealth;

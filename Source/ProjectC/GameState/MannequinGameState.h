@@ -17,6 +17,9 @@ public:
 	TArray<AMannequinPlayerState*> TopScoringPlayers;
 
 	// Teams
+	void RedTeamScores();
+	void BlueTeamScores();
+	
 	UPROPERTY()
 	TArray<AMannequinPlayerState*> RedTeam;
 

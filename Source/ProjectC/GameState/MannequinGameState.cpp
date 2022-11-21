@@ -2,6 +2,7 @@
 #include "MannequinGameState.h"
 
 #include "Net/UnrealNetwork.h"
+#include "ProjectC/PlayerController/MannequinPlayerController.h"
 #include "ProjectC/PlayerState/MannequinPlayerState.h"
 
 void AMannequinGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -32,12 +33,40 @@ void AMannequinGameState::UpdateTopScore(AMannequinPlayerState* ScoringPlayer)
 
 }
 
+void AMannequinGameState::RedTeamScores()
+{
+	RedTeamScore++;
+	AMannequinPlayerController* MPlayer = Cast<AMannequinPlayerController>(GetWorld()->GetFirstPlayerController());
+	if(MPlayer)
+	{
+		MPlayer->SetHUDRedTeamScore(RedTeamScore);
+	}
+}
+
+void AMannequinGameState::BlueTeamScores()
+{
+	BlueTeamScore++;
+	AMannequinPlayerController* MPlayer = Cast<AMannequinPlayerController>(GetWorld()->GetFirstPlayerController());
+	if(MPlayer)
+	{
+		MPlayer->SetHUDBlueTeamScore(BlueTeamScore);
+	}
+}
+
 void AMannequinGameState::OnRep_RedTeamScore()
 {
-	
+	AMannequinPlayerController* MPlayer = Cast<AMannequinPlayerController>(GetWorld()->GetFirstPlayerController());
+	if(MPlayer)
+	{
+		MPlayer->SetHUDRedTeamScore(RedTeamScore);
+	}
 }
 
 void AMannequinGameState::OnRep_BlueTeamScore()
 {
-	
+	AMannequinPlayerController* MPlayer = Cast<AMannequinPlayerController>(GetWorld()->GetFirstPlayerController());
+	if(MPlayer)
+	{
+		MPlayer->SetHUDBlueTeamScore(BlueTeamScore);
+	}
 }

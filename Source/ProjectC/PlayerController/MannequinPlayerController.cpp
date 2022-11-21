@@ -51,7 +51,8 @@ void AMannequinPlayerController::CheckPing(float DeltaSeconds)
 		HighPingRunningTime = 0.f;
 	}
 
-	if (MannequinHUD && MannequinHUD->CharacterOverlay && MannequinHUD->CharacterOverlay->HighPingAnimation && MannequinHUD->CharacterOverlay->IsAnimationPlaying(MannequinHUD->CharacterOverlay->HighPingAnimation))
+	if (MannequinHUD && MannequinHUD->CharacterOverlay && MannequinHUD->CharacterOverlay->HighPingAnimation &&
+		MannequinHUD->CharacterOverlay->IsAnimationPlaying(MannequinHUD->CharacterOverlay->HighPingAnimation))
 	{
 		PingAnimationRunningTime += DeltaSeconds;
 		if (PingAnimationRunningTime > HighPingDuration)
@@ -82,6 +83,18 @@ void AMannequinPlayerController::ShowPauseMenu()
 	}
 }
 
+void AMannequinPlayerController::OnRep_ShowTeamScores()
+{
+	if (bShowTeamScores)
+	{
+		InitTeamScores();
+	}
+	else
+	{
+		HideTeamScores();
+	}
+}
+
 // Is the ping too high?
 void AMannequinPlayerController::ServerReportPingStatus_Implementation(bool bHighPing)
 {
@@ -102,10 +115,11 @@ void AMannequinPlayerController::PollInit()
 				if (bInitializeScore) SetHUDScore(HUDScore);
 				if (bInitializeDefeats) SetHUDDefeats(HUDDefeats);
 				if (bInitializeAmmo) SetHUDAmmo(HUDWeaponAmmo);
+				if (bInitializeTeamScores) InitTeamScores();
 				AMannequinCharacter* MannequinCharacter = Cast<AMannequinCharacter>(GetPawn());
 				if (MannequinCharacter && MannequinCharacter->GetCombat())
 				{
-					if (bInitializeGrenades) SetHUDGrenades(MannequinCharacter->GetCombat()->GetGrenades());	
+					if (bInitializeGrenades) SetHUDGrenades(MannequinCharacter->GetCombat()->GetGrenades());
 				}
 			}
 		}
@@ -116,6 +130,7 @@ void AMannequinPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProp
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(AMannequinPlayerController, MatchState)
+	DOREPLIFETIME(AMannequinPlayerController, bShowTeamScores)
 }
 
 void AMannequinPlayerController::CheckTimeSync(float DeltaSeconds)
@@ -199,6 +214,26 @@ void AMannequinPlayerController::SetHUDScore(float Score)
 	}
 }
 
+void AMannequinPlayerController::SetHUDRedTeamScore(int32 RedScore)
+{
+	MannequinHUD = MannequinHUD == nullptr ? Cast<AMannequinHUD>(GetHUD()) : MannequinHUD;
+	if (MannequinHUD && MannequinHUD->CharacterOverlay && MannequinHUD->CharacterOverlay->RedTeamScore)
+	{
+		FString ScoreText = FString::Printf(TEXT("%d"), RedScore);
+		MannequinHUD->CharacterOverlay->RedTeamScore->SetText(FText::FromString(ScoreText));
+	}
+}
+
+void AMannequinPlayerController::SetHUDBlueTeamScore(int32 BlueScore)
+{
+	MannequinHUD = MannequinHUD == nullptr ? Cast<AMannequinHUD>(GetHUD()) : MannequinHUD;
+	if (MannequinHUD && MannequinHUD->CharacterOverlay && MannequinHUD->CharacterOverlay->RedTeamScore)
+	{
+		FString ScoreText = FString::Printf(TEXT("%d"), BlueScore);
+		MannequinHUD->CharacterOverlay->BlueTeamScore->SetText(FText::FromString(ScoreText));
+	}
+}
+
 void AMannequinPlayerController::SetHUDDefeats(int32 Defeats)
 {
 	MannequinHUD = MannequinHUD == nullptr ? Cast<AMannequinHUD>(GetHUD()) : MannequinHUD;
@@ -268,6 +303,36 @@ void AMannequinPlayerController::SetHUDGrenades(int32 Grenades)
 	}
 }
 
+void AMannequinPlayerController::HideTeamScores()
+{
+	MannequinHUD = MannequinHUD == nullptr ? Cast<AMannequinHUD>(GetHUD()) : MannequinHUD;
+	if (MannequinHUD && MannequinHUD->CharacterOverlay && MannequinHUD->CharacterOverlay->RedTeamScore && MannequinHUD->
+		CharacterOverlay->BlueTeamScore && MannequinHUD->CharacterOverlay->ScoreSpacerText)
+	{
+		MannequinHUD->CharacterOverlay->RedTeamScore->SetText(FText());
+		MannequinHUD->CharacterOverlay->BlueTeamScore->SetText(FText());
+		MannequinHUD->CharacterOverlay->ScoreSpacerText->SetText(FText());
+	}
+}
+
+void AMannequinPlayerController::InitTeamScores()
+{
+	MannequinHUD = MannequinHUD == nullptr ? Cast<AMannequinHUD>(GetHUD()) : MannequinHUD;
+	if (MannequinHUD && MannequinHUD->CharacterOverlay && MannequinHUD->CharacterOverlay->RedTeamScore && MannequinHUD->
+		CharacterOverlay->BlueTeamScore && MannequinHUD->CharacterOverlay->ScoreSpacerText)
+	{
+		FString Zero("0");
+		FString Spacer("|");
+		MannequinHUD->CharacterOverlay->RedTeamScore->SetText(FText::FromString(Zero));
+		MannequinHUD->CharacterOverlay->BlueTeamScore->SetText(FText::FromString(Zero));
+		MannequinHUD->CharacterOverlay->ScoreSpacerText->SetText(FText::FromString(Spacer));
+	}
+	else
+	{
+		bInitializeTeamScores = true;
+	}
+}
+
 void AMannequinPlayerController::SetHUDTime()
 {
 	if (HasAuthority())
@@ -281,8 +346,9 @@ void AMannequinPlayerController::SetHUDTime()
 
 	float TimeLeft = 0.f;
 	if (MatchState == MatchState::WaitingToStart) TimeLeft = WarmupTime - GetServerTime() + LevelStartingTime;
-	else if (MatchState == MatchState::InProgress) TimeLeft = WarmupTime + MatchTime - GetServerTime() +
-		LevelStartingTime;
+	else if (MatchState == MatchState::InProgress)
+		TimeLeft = WarmupTime + MatchTime - GetServerTime() +
+			LevelStartingTime;
 
 	uint32 SecondsLeft = FMath::CeilToInt(TimeLeft);
 	if (CountdownInt != SecondsLeft)
@@ -329,12 +395,12 @@ void AMannequinPlayerController::ReceivedPlayer()
 	}
 }
 
-void AMannequinPlayerController::OnMatchStateSet(FName State)
+void AMannequinPlayerController::OnMatchStateSet(FName State, bool bTeamsMatch)
 {
 	MatchState = State;
 	if (MatchState == MatchState::InProgress)
 	{
-		HandleMatchHasStarted();
+		HandleMatchHasStarted(bTeamsMatch);
 	}
 	else if (MatchState == MatchState::Cooldown)
 	{
@@ -354,8 +420,9 @@ void AMannequinPlayerController::OnRep_MatchState()
 	}
 }
 
-void AMannequinPlayerController::HandleMatchHasStarted()
+void AMannequinPlayerController::HandleMatchHasStarted(bool bTeamsMatch)
 {
+	if (HasAuthority()) bShowTeamScores = bTeamsMatch;
 	MannequinHUD = MannequinHUD == nullptr ? Cast<AMannequinHUD>(GetHUD()) : MannequinHUD;
 	if (MannequinHUD)
 	{
@@ -363,6 +430,15 @@ void AMannequinPlayerController::HandleMatchHasStarted()
 		if (MannequinHUD->Announcement)
 		{
 			MannequinHUD->Announcement->SetVisibility(ESlateVisibility::Hidden);
+		}
+		if (!HasAuthority()) return;
+		if (bTeamsMatch)
+		{
+			InitTeamScores();
+		}
+		else
+		{
+			HideTeamScores();
 		}
 	}
 }
@@ -388,10 +464,12 @@ void AMannequinPlayerController::HandleCooldown()
 				if (TopPlayers.Num() == 0)
 				{
 					InfoTextString = FString("There is no winner");
-				} else if (TopPlayers.Num() == 1 && TopPlayers[0] == MannequinPlayerState)
+				}
+				else if (TopPlayers.Num() == 1 && TopPlayers[0] == MannequinPlayerState)
 				{
 					InfoTextString = FString("You are the winner");
-				} else if (TopPlayers.Num() == 1)
+				}
+				else if (TopPlayers.Num() == 1)
 				{
 					InfoTextString = FString::Printf(TEXT("Winner: \n%s"), *TopPlayers[0]->GetPlayerName());
 				}
@@ -411,14 +489,15 @@ void AMannequinPlayerController::HandleCooldown()
 	if (MannequinCharacter && MannequinCharacter->GetCombat())
 	{
 		MannequinCharacter->bDisableGameplay = true;
-		MannequinCharacter->GetCombat()->FireButtonPressed(false);		
+		MannequinCharacter->GetCombat()->FireButtonPressed(false);
 	}
 }
 
 void AMannequinPlayerController::HighPingWarning()
 {
 	MannequinHUD = MannequinHUD == nullptr ? Cast<AMannequinHUD>(GetHUD()) : MannequinHUD;
-	if (MannequinHUD && MannequinHUD->CharacterOverlay && MannequinHUD->CharacterOverlay->HighPingImage && MannequinHUD->CharacterOverlay->HighPingAnimation)
+	if (MannequinHUD && MannequinHUD->CharacterOverlay && MannequinHUD->CharacterOverlay->HighPingImage && MannequinHUD
+		->CharacterOverlay->HighPingAnimation)
 	{
 		MannequinHUD->CharacterOverlay->HighPingImage->SetOpacity(1.f);
 		MannequinHUD->CharacterOverlay->PlayAnimation(MannequinHUD->CharacterOverlay->HighPingAnimation, 0.f, 10);
@@ -428,7 +507,8 @@ void AMannequinPlayerController::HighPingWarning()
 void AMannequinPlayerController::StopHighPingWarning()
 {
 	MannequinHUD = MannequinHUD == nullptr ? Cast<AMannequinHUD>(GetHUD()) : MannequinHUD;
-	if (MannequinHUD && MannequinHUD->CharacterOverlay && MannequinHUD->CharacterOverlay->HighPingImage && MannequinHUD->CharacterOverlay->HighPingAnimation)
+	if (MannequinHUD && MannequinHUD->CharacterOverlay && MannequinHUD->CharacterOverlay->HighPingImage && MannequinHUD
+		->CharacterOverlay->HighPingAnimation)
 	{
 		MannequinHUD->CharacterOverlay->HighPingImage->SetOpacity(0.f);
 		if (MannequinHUD->CharacterOverlay->IsAnimationPlaying(MannequinHUD->CharacterOverlay->HighPingAnimation))

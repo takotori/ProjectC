@@ -3,7 +3,13 @@
 
 #include "Kismet/GameplayStatics.h"
 #include "ProjectC/GameState/MannequinGameState.h"
+#include "ProjectC/PlayerController/MannequinPlayerController.h"
 #include "ProjectC/PlayerState/MannequinPlayerState.h"
+
+ATeamMatchGameMode::ATeamMatchGameMode()
+{
+	bTeamsMatch = true;
+}
 
 void ATeamMatchGameMode::PostLogin(APlayerController* NewPlayer)
 {
@@ -85,4 +91,23 @@ float ATeamMatchGameMode::CalculateDamage(AController* Attacker, AController* Vi
 		return 0.f;
 	}
 	return BaseDamage;
+}
+
+void ATeamMatchGameMode::PlayerEliminated(AMannequinCharacter* EliminatedCharacter,
+	AMannequinPlayerController* VictimController, AMannequinPlayerController* AttackerController)
+{
+	Super::PlayerEliminated(EliminatedCharacter, VictimController, AttackerController);
+	AMannequinGameState* MGameState = Cast<AMannequinGameState>(UGameplayStatics::GetGameState(this));
+	AMannequinPlayerState* AttackerPlayerState = AttackerController ? Cast<AMannequinPlayerState>(AttackerController->PlayerState) : nullptr;
+	if (MGameState && AttackerPlayerState)
+	{
+		if (AttackerPlayerState->GetTeam() == ETeam::ET_BlueTeam)
+		{
+			MGameState->BlueTeamScores();
+		}
+		if (AttackerPlayerState->GetTeam() == ETeam::ET_RedTeam)
+		{
+			MGameState->RedTeamScores();
+		}
+	}
 }

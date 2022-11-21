@@ -61,7 +61,7 @@ void AMatchGameMode::OnMatchStateSet()
 		AMannequinPlayerController* MannequinPlayer = Cast<AMannequinPlayerController>(*It);
 		if (MannequinPlayer)
 		{
-			MannequinPlayer->OnMatchStateSet(MatchState);
+			MannequinPlayer->OnMatchStateSet(MatchState, bTeamsMatch);
 		}
 	}
 }
