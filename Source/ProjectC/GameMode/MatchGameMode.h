@@ -17,6 +17,7 @@ class PROJECTC_API AMatchGameMode : public AGameMode
 public:
 	AMatchGameMode();
 	virtual void Tick(float DeltaSeconds) override;
+	virtual float CalculateDamage(AController* Attacker, AController* Victim, float BaseDamage);
 	virtual void PlayerEliminated(class AMannequinCharacter* EliminatedCharacter,
 	                              class AMannequinPlayerController* VictimController,
 	                              AMannequinPlayerController* AttackerController);

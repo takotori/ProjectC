@@ -309,6 +309,7 @@ void AMannequinCharacter::MulticastElim_Implementation(bool bPlayerLeftGame)
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetEquippedWeapon()->Destroy();
+	AttachedGrenade->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	GetWorldTimerManager().SetTimer(
 		ElimTimer,
@@ -320,7 +321,7 @@ void AMannequinCharacter::MulticastElim_Implementation(bool bPlayerLeftGame)
 
 void AMannequinCharacter::ElimTimerFinished()
 {
-	AMatchGameMode* MatchGameMode = GetWorld()->GetAuthGameMode<AMatchGameMode>();
+	MatchGameMode = MatchGameMode == nullptr ? GetWorld()->GetAuthGameMode<AMatchGameMode>() : MatchGameMode;
 	if (MatchGameMode && !bLeftGame)
 	{
 		MatchGameMode->RequestRespawn(this, Controller);
@@ -333,7 +334,7 @@ void AMannequinCharacter::ElimTimerFinished()
 
 void AMannequinCharacter::ServerLeaveGame_Implementation()
 {
-	AMatchGameMode* MatchGameMode = GetWorld()->GetAuthGameMode<AMatchGameMode>();
+	MatchGameMode = MatchGameMode == nullptr ? GetWorld()->GetAuthGameMode<AMatchGameMode>() : MatchGameMode;
 	MannequinPlayerState = MannequinPlayerState == nullptr ? GetPlayerState<AMannequinPlayerState>() : MannequinPlayerState;
 	if (MatchGameMode && MannequinPlayerState)
 	{
@@ -366,7 +367,9 @@ void AMannequinCharacter::GrenadeButtonPressed()
 void AMannequinCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
                                         AController* InstigatorController, AActor* DamageCauser)
 {
-	if (bElimmed) return;
+	MatchGameMode = MatchGameMode == nullptr ? GetWorld()->GetAuthGameMode<AMatchGameMode>() : MatchGameMode;
+	if (bElimmed || MatchGameMode == nullptr) return;
+	Damage = MatchGameMode->CalculateDamage(InstigatorController, Controller, Damage);
 
 	float DamageToHealth = Damage;
 	if (Shield > 0.f)
@@ -378,8 +381,8 @@ void AMannequinCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, cons
 		}
 		else
 		{
-			Shield = 0;
 			DamageToHealth = FMath::Clamp(DamageToHealth - Shield, 0.f, Damage);
+			Shield = 0;
 		}
 	}
 	
@@ -390,7 +393,6 @@ void AMannequinCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, cons
 
 	if (Health == 0.f)
 	{
-		AMatchGameMode* MatchGameMode = GetWorld()->GetAuthGameMode<AMatchGameMode>();
 		if (MatchGameMode)
 		{
 			MannequinPlayerController = MannequinPlayerController == nullptr
@@ -553,7 +555,7 @@ void AMannequinCharacter::UpdateHUDAmmo()
 
 void AMannequinCharacter::SpawnDefaultWeapon()
 {
-	AMatchGameMode* MatchGameMode = Cast<AMatchGameMode>(UGameplayStatics::GetGameMode(this));
+	MatchGameMode = MatchGameMode == nullptr ? GetWorld()->GetAuthGameMode<AMatchGameMode>() : MatchGameMode;
 	UWorld* World = GetWorld();
 	if (MatchGameMode && World && !bElimmed && DefaultWeaponClass)
 	{

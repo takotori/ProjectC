@@ -66,6 +66,11 @@ void AMatchGameMode::OnMatchStateSet()
 	}
 }
 
+float AMatchGameMode::CalculateDamage(AController* Attacker, AController* Victim, float BaseDamage)
+{
+	return BaseDamage;
+}
+
 void AMatchGameMode::PlayerEliminated(AMannequinCharacter* EliminatedCharacter,
                                       AMannequinPlayerController* VictimController,
                                       AMannequinPlayerController* AttackerController)

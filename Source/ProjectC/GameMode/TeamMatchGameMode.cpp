@@ -50,7 +50,7 @@ void ATeamMatchGameMode::Logout(AController* Exiting)
 void ATeamMatchGameMode::HandleMatchHasStarted()
 {
 	Super::HandleMatchHasStarted();
-	AMannequinGameState* MatchGameState = Cast<AMannequinGameState>(UGameplayStatics::GetGameState(this));
+	AMannequinGameState*MatchGameState = Cast<AMannequinGameState>(UGameplayStatics::GetGameState(this));
 	if (MatchGameState)
 	{
 		for (auto PState : MatchGameState->PlayerArray)
@@ -71,4 +71,18 @@ void ATeamMatchGameMode::HandleMatchHasStarted()
 			}
 		}
 	}
+}
+
+float ATeamMatchGameMode::CalculateDamage(AController* Attacker, AController* Victim, float BaseDamage)
+{
+	AMannequinPlayerState* AttackerPState = Attacker->GetPlayerState<AMannequinPlayerState>();
+	AMannequinPlayerState* VictimPState = Victim->GetPlayerState<AMannequinPlayerState>();
+	if (AttackerPState == nullptr && VictimPState == nullptr) return BaseDamage;
+	if (AttackerPState == VictimPState) return BaseDamage;
+
+	if (AttackerPState->GetTeam() == VictimPState->GetTeam())
+	{
+		return 0.f;
+	}
+	return BaseDamage;
 }

@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "Components/TimelineComponent.h"
 #include "GameFramework/Character.h"
+#include "ProjectC/GameMode/MatchGameMode.h"
 #include "ProjectC/Interfaces/InteractWithCrosshairsInterface.h"
 #include "ProjectC/Types/CombatState.h"
 #include "MannequinCharacter.generated.h"
@@ -45,6 +46,10 @@ public:
 	void ServerLeaveGame();
 
 	FOnLeftGame OnLeftGame;
+
+	UPROPERTY()
+	AMatchGameMode* MatchGameMode;
+
 	
 protected:
 	virtual void BeginPlay() override;
