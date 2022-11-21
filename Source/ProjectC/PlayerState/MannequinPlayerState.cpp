@@ -9,6 +9,7 @@ void AMannequinPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(AMannequinPlayerState, Defeats);
+	DOREPLIFETIME(AMannequinPlayerState, Team);
 }
 
 void AMannequinPlayerState::AddToScore(float ScoreAmount)

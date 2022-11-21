@@ -8,6 +8,8 @@ void AMannequinGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(AMannequinGameState, TopScoringPlayers);
+	DOREPLIFETIME(AMannequinGameState, RedTeamScore);
+	DOREPLIFETIME(AMannequinGameState, BlueTeamScore);
 }
 
 void AMannequinGameState::UpdateTopScore(AMannequinPlayerState* ScoringPlayer)
@@ -28,4 +30,14 @@ void AMannequinGameState::UpdateTopScore(AMannequinPlayerState* ScoringPlayer)
 		TopScore = ScoringPlayer->GetScore();
 	}
 
+}
+
+void AMannequinGameState::OnRep_RedTeamScore()
+{
+	
+}
+
+void AMannequinGameState::OnRep_BlueTeamScore()
+{
+	
 }
