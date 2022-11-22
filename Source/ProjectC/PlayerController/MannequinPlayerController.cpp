@@ -15,6 +15,7 @@
 #include "ProjectC/HUD/MannequinHUD.h"
 #include "ProjectC/HUD/PauseMenu.h"
 #include "ProjectC/PlayerState/MannequinPlayerState.h"
+#include "ProjectC/Types/Announcement.h"
 
 void AMannequinPlayerController::BeginPlay()
 {
@@ -452,35 +453,14 @@ void AMannequinPlayerController::HandleCooldown()
 		if (MannequinHUD->Announcement)
 		{
 			MannequinHUD->Announcement->SetVisibility(ESlateVisibility::Visible);
-			FString AnnouncementText("New Match starts in:");
-			MannequinHUD->Announcement->AnnouncementText->SetText(FText::FromString(AnnouncementText));
+			MannequinHUD->Announcement->AnnouncementText->SetText(FText::FromString(Announcement::NewMatchStartsIn));
 
-			AMannequinGameState* GameState = Cast<AMannequinGameState>(UGameplayStatics::GetGameState(this));
+			AMannequinGameState* MannequinGameState = Cast<AMannequinGameState>(UGameplayStatics::GetGameState(this));
 			AMannequinPlayerState* MannequinPlayerState = GetPlayerState<AMannequinPlayerState>();
-			if (GameState && MannequinPlayerState)
+			if (MannequinGameState && MannequinPlayerState)
 			{
-				TArray<AMannequinPlayerState*> TopPlayers = GameState->TopScoringPlayers;
-				FString InfoTextString;
-				if (TopPlayers.Num() == 0)
-				{
-					InfoTextString = FString("There is no winner");
-				}
-				else if (TopPlayers.Num() == 1 && TopPlayers[0] == MannequinPlayerState)
-				{
-					InfoTextString = FString("You are the winner");
-				}
-				else if (TopPlayers.Num() == 1)
-				{
-					InfoTextString = FString::Printf(TEXT("Winner: \n%s"), *TopPlayers[0]->GetPlayerName());
-				}
-				else if (TopPlayers.Num() > 1)
-				{
-					InfoTextString = FString("Players tied for the win\n");
-					for (auto TiedPlayer : TopPlayers)
-					{
-						InfoTextString.Append(FString::Printf(TEXT("%s\n"), *TiedPlayer->GetPlayerName()));
-					}
-				}
+				TArray<AMannequinPlayerState*> TopPlayers = MannequinGameState->TopScoringPlayers;
+				FString InfoTextString = bShowTeamScores ? GetTeamsInfoText(MannequinGameState) : GetInfoText(TopPlayers);
 				MannequinHUD->Announcement->InfoText->SetText(FText::FromString(InfoTextString));
 			}
 		}
@@ -491,6 +471,65 @@ void AMannequinPlayerController::HandleCooldown()
 		MannequinCharacter->bDisableGameplay = true;
 		MannequinCharacter->GetCombat()->FireButtonPressed(false);
 	}
+}
+
+
+FString AMannequinPlayerController::GetInfoText(const TArray<AMannequinPlayerState*>& Players)
+{
+	AMannequinPlayerState* MannequinPlayerState = GetPlayerState<AMannequinPlayerState>();
+	if (MannequinPlayerState) return FString();
+	FString InfoTextString;
+	if (Players.Num() == 0)
+	{
+		InfoTextString = Announcement::NoWinner;
+	}
+	else if (Players.Num() == 1 && Players[0] == MannequinPlayerState)
+	{
+		InfoTextString = Announcement::YouAreWinner;
+	}
+	else if (Players.Num() == 1)
+	{
+		InfoTextString = FString::Printf(TEXT("Winner: \n%s"), *Players[0]->GetPlayerName());
+	}
+	else if (Players.Num() > 1)
+	{
+		InfoTextString = Announcement::TiedForWin;
+		for (const auto TiedPlayer : Players)
+		{
+			InfoTextString.Append(FString::Printf(TEXT("%s\n"), *TiedPlayer->GetPlayerName()));
+		}
+	}
+	return InfoTextString;
+}
+
+FString AMannequinPlayerController::GetTeamsInfoText(AMannequinGameState* MannequinGameState)
+{
+	if (MannequinGameState) return FString();
+	FString InfoTextString;
+	const int32 RedTeamScore = MannequinGameState->RedTeamScore;
+	const int32 BlueTeamScore = MannequinGameState->BlueTeamScore;
+	if (RedTeamScore == 0 && BlueTeamScore == 0)
+	{
+		InfoTextString = Announcement::NoWinner;
+	}
+	else if (RedTeamScore == BlueTeamScore)
+	{
+		InfoTextString = Announcement::TeamsTiedForWin;
+	}
+	else if (RedTeamScore > BlueTeamScore)
+	{
+		InfoTextString = Announcement::RedTeamWins;
+		InfoTextString.Append(TEXT("\n"));
+		InfoTextString.Append(FString::Printf(TEXT("Red Team: %d\n"), RedTeamScore));
+		InfoTextString.Append(FString::Printf(TEXT("Blue Team: %d\n"), BlueTeamScore));
+	} else if (BlueTeamScore > RedTeamScore)
+	{
+		InfoTextString = Announcement::BlueTeamWins;
+		InfoTextString.Append(TEXT("\n"));
+		InfoTextString.Append(FString::Printf(TEXT("Blue Team: %d\n"), BlueTeamScore));
+		InfoTextString.Append(FString::Printf(TEXT("Red Team: %d\n"), RedTeamScore));
+	}
+	return InfoTextString;
 }
 
 void AMannequinPlayerController::HighPingWarning()

@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+#include "ProjectC/PlayerState/MannequinPlayerState.h"
 #include "MannequinPlayerController.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHighPingDelegate, bool, bPingTooHigh);
@@ -81,6 +82,10 @@ protected:
 
 	UFUNCTION()
 	void OnRep_ShowTeamScores();
+
+	FString GetInfoText(const TArray<AMannequinPlayerState*>& Players);
+	
+	FString GetTeamsInfoText(class AMannequinGameState* MannequinGameState);
 	
 private:
 	UPROPERTY()
