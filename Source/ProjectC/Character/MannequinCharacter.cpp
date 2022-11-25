@@ -1,4 +1,7 @@
 #include "MannequinCharacter.h"
+
+#include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
 #include "Camera/CameraComponent.h"
 #include "Components/BoxComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -12,7 +15,6 @@
 #include "ProjectC/Components/CombatComponent.h"
 #include "ProjectC/Components/LagCompensationComponent.h"
 #include "ProjectC/GameMode/MatchGameMode.h"
-#include "ProjectC/GameState/MannequinGameState.h"
 #include "ProjectC/PlayerController/MannequinPlayerController.h"
 #include "ProjectC/PlayerState/MannequinPlayerState.h"
 #include "ProjectC/Weapon/Weapon.h"
@@ -51,7 +53,7 @@ AMannequinCharacter::AMannequinCharacter()
 	AttachedGrenade->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	LagCompensation = CreateDefaultSubobject<ULagCompensationComponent>(TEXT("Lag Compensation"));
-	
+
 	// Hit boxes for server-side rewind
 	head = CreateDefaultSubobject<UBoxComponent>(TEXT("head"));
 	head->SetupAttachment(GetMesh(), FName("head"));
@@ -60,7 +62,7 @@ AMannequinCharacter::AMannequinCharacter()
 	pelvis = CreateDefaultSubobject<UBoxComponent>(TEXT("pelvis"));
 	pelvis->SetupAttachment(GetMesh(), FName("pelvis"));
 	HitCollisionBoxes.Add(FName("pelvis"), pelvis);
-	
+
 	spine_02 = CreateDefaultSubobject<UBoxComponent>(TEXT("spine_02"));
 	spine_02->SetupAttachment(GetMesh(), FName("spine_02"));
 	HitCollisionBoxes.Add(FName("spine_02"), spine_02);
@@ -117,7 +119,7 @@ AMannequinCharacter::AMannequinCharacter()
 	foot_r->SetupAttachment(GetMesh(), FName("foot_r"));
 	HitCollisionBoxes.Add(FName("foot_r"), foot_r);
 
-	for (auto Box : HitCollisionBoxes)
+	for (const auto Box : HitCollisionBoxes)
 	{
 		if (Box.Value)
 		{
@@ -133,7 +135,7 @@ void AMannequinCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	SpawnDefaultWeapon();
-	
+
 	if (HasAuthority())
 	{
 		OnTakeAnyDamage.AddDynamic(this, &AMannequinCharacter::ReceiveDamage);
@@ -142,6 +144,32 @@ void AMannequinCharacter::BeginPlay()
 	{
 		AttachedGrenade->SetVisibility(false);
 	}
+}
+
+void AMannequinCharacter::Move(const FInputActionValue& Value)
+{
+	if (bDisableGameplay) return;
+
+	const FVector2d MovementVector = Value.Get<FVector2d>();
+	if (Controller != nullptr)
+	{
+		const FRotator YawRotation(0.f, Controller->GetControlRotation().Yaw, 0.f);
+
+		const FVector ForwardDirection(FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X));
+		AddMovementInput(ForwardDirection, MovementVector.Y);
+
+		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+		AddMovementInput(RightDirection, MovementVector.X);
+	}
+}
+
+void AMannequinCharacter::Look(const FInputActionValue& Value)
+{
+	if (bDisableGameplay) return;
+
+	const FVector2D LookAxisVector = Value.Get<FVector2d>();
+	AddControllerYawInput(LookAxisVector.X);
+	AddControllerPitchInput(LookAxisVector.Y);
 }
 
 void AMannequinCharacter::Tick(float DeltaTime)
@@ -155,17 +183,20 @@ void AMannequinCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
-	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &AMannequinCharacter::CrouchButtonPressed);
-	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AMannequinCharacter::FireButtonPressed);
-	PlayerInputComponent->BindAction("Fire", IE_Released, this, &AMannequinCharacter::FireButtonReleased);
-	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &AMannequinCharacter::ReloadButtonPressed);
-	PlayerInputComponent->BindAction("ThrowGrenade", IE_Pressed, this, &AMannequinCharacter::GrenadeButtonPressed);
-
-	PlayerInputComponent->BindAxis("MoveForward", this, &AMannequinCharacter::MoveForward);
-	PlayerInputComponent->BindAxis("MoveRight", this, &AMannequinCharacter::MoveRight);
-	PlayerInputComponent->BindAxis("Turn", this, &AMannequinCharacter::Turn);
-	PlayerInputComponent->BindAxis("LookUp", this, &AMannequinCharacter::LookUp);
+	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent))
+	{
+		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AMannequinCharacter::Move);
+		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AMannequinCharacter::Look);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &AMannequinCharacter::Jump);
+		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this,
+		                                   &AMannequinCharacter::CrouchPlayer);
+		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Triggered, this, &AMannequinCharacter::Fire);
+		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Completed, this,
+		                                   &AMannequinCharacter::FireButtonReleased);
+		EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Triggered, this, &AMannequinCharacter::Reload);
+		EnhancedInputComponent->BindAction(ThrowGrenadeAction, ETriggerEvent::Triggered, this,
+		                                   &AMannequinCharacter::ThrowGrenade);
+	}
 }
 
 void AMannequinCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -207,7 +238,7 @@ void AMannequinCharacter::PlayFireMontage()
 	if (AnimInstance && FireWeaponMontage)
 	{
 		AnimInstance->Montage_Play(FireWeaponMontage);
-		FName SectionName = FName("RifleHip");
+		const FName SectionName = FName("RifleHip");
 		AnimInstance->Montage_JumpToSection(SectionName);
 	}
 }
@@ -304,7 +335,7 @@ void AMannequinCharacter::MulticastElim_Implementation(bool bPlayerLeftGame)
 	{
 		Combat->FireButtonPressed(false);
 	}
-	
+
 	// Disable collision
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -335,11 +366,13 @@ void AMannequinCharacter::ElimTimerFinished()
 void AMannequinCharacter::ServerLeaveGame_Implementation()
 {
 	MatchGameMode = MatchGameMode == nullptr ? GetWorld()->GetAuthGameMode<AMatchGameMode>() : MatchGameMode;
-	MannequinPlayerState = MannequinPlayerState == nullptr ? GetPlayerState<AMannequinPlayerState>() : MannequinPlayerState;
+	MannequinPlayerState = MannequinPlayerState == nullptr
+		                       ? GetPlayerState<AMannequinPlayerState>()
+		                       : MannequinPlayerState;
 	if (MatchGameMode && MannequinPlayerState)
 	{
 		MatchGameMode->PlayerLeftGame(MannequinPlayerState);
-	}	
+	}
 }
 
 void AMannequinCharacter::PlayHitReactMontage()
@@ -351,12 +384,12 @@ void AMannequinCharacter::PlayHitReactMontage()
 	if (AnimInstance && HitReactMontage && !AnimInstance->IsAnyMontagePlaying())
 	{
 		AnimInstance->Montage_Play(HitReactMontage);
-		FName SectionName("FromFront");
+		const FName SectionName("FromFront");
 		AnimInstance->Montage_JumpToSection(SectionName);
 	}
 }
 
-void AMannequinCharacter::GrenadeButtonPressed()
+void AMannequinCharacter::ThrowGrenade()
 {
 	if (Combat)
 	{
@@ -385,7 +418,7 @@ void AMannequinCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, cons
 			Shield = 0;
 		}
 	}
-	
+
 	Health = FMath::Clamp(Health - DamageToHealth, 0.f, MaxHealth);
 	UpdateHUDHealth();
 	UpdateHUDShield();
@@ -404,42 +437,10 @@ void AMannequinCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, cons
 	}
 }
 
-void AMannequinCharacter::MoveForward(float Value)
+void AMannequinCharacter::CrouchPlayer()
 {
 	if (bDisableGameplay) return;
-	if (Controller != nullptr && Value != 0.f)
-	{
-		const FRotator YawRotation(0.f, Controller->GetControlRotation().Yaw, 0.f);
-		const FVector Direction(FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X));
-		AddMovementInput(Direction, Value);
-	}
-}
-
-void AMannequinCharacter::MoveRight(float Value)
-{
-	if (bDisableGameplay) return;
-	if (Controller != nullptr && Value != 0.f)
-	{
-		const FRotator YawRotation(0.f, Controller->GetControlRotation().Yaw, 0.f);
-		const FVector Direction(FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y));
-		AddMovementInput(Direction, Value);
-	}
-}
-
-void AMannequinCharacter::Turn(float Value)
-{
-	AddControllerYawInput(Value);
-}
-
-void AMannequinCharacter::LookUp(float Value)
-{
-	AddControllerPitchInput(Value);
-}
-
-void AMannequinCharacter::CrouchButtonPressed()
-{
-	if (bDisableGameplay) return;
-	bIsCrouched ? UnCrouch() : Crouch();
+	bIsCrouched ? UnCrouch() : CrouchPlayer();
 }
 
 void AMannequinCharacter::AimOffset(float DeltaTime)
@@ -475,7 +476,7 @@ void AMannequinCharacter::AimOffset(float DeltaTime)
 	}
 }
 
-void AMannequinCharacter::FireButtonPressed()
+void AMannequinCharacter::Fire()
 {
 	if (bDisableGameplay) return;
 	if (Combat)
@@ -493,7 +494,7 @@ void AMannequinCharacter::FireButtonReleased()
 	}
 }
 
-void AMannequinCharacter::ReloadButtonPressed()
+void AMannequinCharacter::Reload()
 {
 	if (bDisableGameplay) return;
 	if (Combat)
@@ -534,8 +535,8 @@ void AMannequinCharacter::OnRep_Shield(float LastShield)
 void AMannequinCharacter::UpdateHUDShield()
 {
 	MannequinPlayerController = MannequinPlayerController == nullptr
-								? Cast<AMannequinPlayerController>(Controller)
-								: MannequinPlayerController;
+		                            ? Cast<AMannequinPlayerController>(Controller)
+		                            : MannequinPlayerController;
 	if (MannequinPlayerController)
 	{
 		MannequinPlayerController->SetHUDShield(Shield, MaxShield);
@@ -545,8 +546,8 @@ void AMannequinCharacter::UpdateHUDShield()
 void AMannequinCharacter::UpdateHUDAmmo()
 {
 	MannequinPlayerController = MannequinPlayerController == nullptr
-								? Cast<AMannequinPlayerController>(Controller)
-								: MannequinPlayerController;
+		                            ? Cast<AMannequinPlayerController>(Controller)
+		                            : MannequinPlayerController;
 	if (MannequinPlayerController && Combat && Combat->EquippedWeapon)
 	{
 		MannequinPlayerController->SetHUDAmmo(GetEquippedWeapon()->GetAmmo());
@@ -580,12 +581,22 @@ void AMannequinCharacter::PollInit()
 	}
 	if (MannequinPlayerController == nullptr)
 	{
-		MannequinPlayerController = MannequinPlayerController == nullptr ? Cast<AMannequinPlayerController>(Controller) : MannequinPlayerController;
+		MannequinPlayerController = MannequinPlayerController == nullptr
+			                            ? Cast<AMannequinPlayerController>(Controller)
+			                            : MannequinPlayerController;
 		if (MannequinPlayerController)
 		{
 			UpdateHUDHealth();
 			UpdateHUDShield();
 			UpdateHUDAmmo();
+			if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
+			{
+				if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<
+					UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+				{
+					Subsystem->AddMappingContext(BaseMappingContext, 0);
+				}
+			}
 		}
 	}
 }

@@ -10,8 +10,7 @@ public class ProjectC : ModuleRules
 
 		PublicDependencyModuleNames.AddRange(new string[]
 		{
-			"Core", "CoreUObject", "Engine", "InputCore", "UMG", "Niagara", "MultiplayerSessions", "OnlineSubsystem", "OnlineSubsystemSteam",
-			
+			"Core", "CoreUObject", "Engine", "InputCore", "UMG", "Niagara", "MultiplayerSessions", "OnlineSubsystem", "OnlineSubsystemSteam", "EnhancedInput"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] { });

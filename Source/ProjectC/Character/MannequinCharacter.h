@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "InputActionValue.h"
 #include "Components/TimelineComponent.h"
 #include "GameFramework/Character.h"
 #include "ProjectC/GameMode/MatchGameMode.h"
@@ -50,25 +51,51 @@ public:
 	UPROPERTY()
 	AMatchGameMode* MatchGameMode;
 
-	
 protected:
 	virtual void BeginPlay() override;
 
-	void MoveForward(float Value);
-	void MoveRight(float Value);
-	void Turn(float Value);
-	void LookUp(float Value);
-	void CrouchButtonPressed();
+	void CrouchPlayer();
 	void AimOffset(float DeltaTime);
-	void FireButtonPressed();
+	void Fire();
 	void FireButtonReleased();
-	void ReloadButtonPressed();
+	void Reload();
 	void PlayHitReactMontage();
-	void GrenadeButtonPressed();
+	void ThrowGrenade();
+
+	UPROPERTY(EditAnywhere, Category = "Input")
+	class UInputMappingContext* BaseMappingContext;
+
+	UPROPERTY(EditAnywhere, Category = "Input")
+	class UInputAction* MoveAction;
+
+	UPROPERTY(EditAnywhere, Category = "Input")
+	UInputAction* LookAction;
+
+	UPROPERTY(EditAnywhere, Category = "Input")
+	UInputAction* JumpAction;
+
+	UPROPERTY(EditAnywhere, Category = "Input")
+	UInputAction* CrouchAction;
+
+	UPROPERTY(EditAnywhere, Category = "Input")
+	UInputAction* FireAction;
+
+	UPROPERTY(EditAnywhere, Category = "Input")
+	UInputAction* ReloadAction;
+
+	UPROPERTY(EditAnywhere, Category = "Input")
+	UInputAction* ThrowGrenadeAction;
+
+	UPROPERTY(EditAnywhere, Category = "Input")
+	UInputAction* QuitAction;
+
+	void Move(const FInputActionValue& Value);
+	void Look(const FInputActionValue& Value);
 
 	UFUNCTION()
 	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
 	                   class AController* InstigatorController, AActor* DamageCauser);
+
 	// Poll for any relevant classes and initialize HUD
 	void PollInit();
 
@@ -133,9 +160,6 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	class ULagCompensationComponent* LagCompensation;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess = "true"))
-	class AWeapon* Weapon;
 
 	float AO_Yaw;
 	float AO_Pitch;
