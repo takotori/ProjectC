@@ -99,7 +99,7 @@ protected:
 	// Poll for any relevant classes and initialize HUD
 	void PollInit();
 
-	// Hit boxes used for server-sind rewind
+	// Hit boxes used for server-side rewind
 	UPROPERTY(EditAnywhere)
 	UBoxComponent* head;
 
@@ -251,7 +251,7 @@ private:
 
 	// Default weapon
 	UPROPERTY(EditAnywhere, Category = "Combat")
-	TSubclassOf<AWeapon> DefaultWeaponClass;
+	TSubclassOf<class AWeapon> DefaultWeaponClass;
 
 public:
 	AWeapon* GetEquippedWeapon();
