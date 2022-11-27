@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerState.h"
+#include "ProjectC/Cards/BaseCard.h"
 #include "ProjectC/Types/Team.h"
 #include "MannequinPlayerState.generated.h"
 
@@ -27,6 +28,9 @@ private:
 
 	UPROPERTY()
 	class AMannequinPlayerController* Controller;
+
+	UPROPERTY()
+	TArray<ABaseCard*> Deck;
 
 	UPROPERTY(ReplicatedUsing = OnRep_Defeats)
 	int32 Defeats;

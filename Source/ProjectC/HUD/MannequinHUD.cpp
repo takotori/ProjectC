@@ -1,9 +1,8 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 
 #include "MannequinHUD.h"
 
 #include "Announcement.h"
+#include "CardPickerWidget.h"
 #include "CharacterOverlay.h"
 #include "Blueprint/UserWidget.h"
 
@@ -32,42 +31,52 @@ void AMannequinHUD::AddAnnouncement()
 	}
 }
 
+void AMannequinHUD::AddCardPicker()
+{
+	APlayerController* PlayerController = GetOwningPlayerController();
+	if (PlayerController && CardPickerClass && CardPicker == nullptr)
+	{
+		CardPicker = CreateWidget<UCardPickerWidget>(PlayerController, CardPickerClass);
+		CardPicker->AddToViewport();
+	}
+}
+
 void AMannequinHUD::DrawHUD()
 {
 	Super::DrawHUD();
-	FVector2d ViewportSize;
 	if (GEngine)
 	{
+		FVector2d ViewportSize;
 		GEngine->GameViewport->GetViewportSize(ViewportSize);
 		const FVector2d ViewportCenter(ViewportSize.X / 2.f, ViewportSize.Y / 2.f);
 
-		float SpreadScaled = CrosshairSpreadMax * HUDPackage.CrosshairSpread;
+		const float SpreadScaled = CrosshairSpreadMax * HUDPackage.CrosshairSpread;
 		
 		if (HUDPackage.CrosshairsCenter)
 		{
-			FVector2d Spread(0.f, 0.f);
+			const FVector2d Spread(0.f, 0.f);
 			DrawCrosshair(HUDPackage.CrosshairsCenter, ViewportCenter, Spread, HUDPackage.CrosshairsColor);	
 		}
 		
 		if (HUDPackage.CrosshairsLeft)
 		{
-			FVector2d Spread(-SpreadScaled, 0.f);
+			const FVector2d Spread(-SpreadScaled, 0.f);
 			DrawCrosshair(HUDPackage.CrosshairsLeft, ViewportCenter, Spread, HUDPackage.CrosshairsColor);	
 		}
 
 		if (HUDPackage.CrosshairsRight)
 		{
-			FVector2d Spread(SpreadScaled, 0.f);
+			const FVector2d Spread(SpreadScaled, 0.f);
 			DrawCrosshair(HUDPackage.CrosshairsRight, ViewportCenter, Spread, HUDPackage.CrosshairsColor);	
 		}
 		if (HUDPackage.CrosshairsTop)
 		{
-			FVector2d Spread(0.f, SpreadScaled);
+			const FVector2d Spread(0.f, SpreadScaled);
 			DrawCrosshair(HUDPackage.CrosshairsTop, ViewportCenter, Spread, HUDPackage.CrosshairsColor);	
 		}
 		if (HUDPackage.CrosshairsBottom)
 		{
-			FVector2d Spread(0.f, -SpreadScaled);
+			const FVector2d Spread(0.f, -SpreadScaled);
 			DrawCrosshair(HUDPackage.CrosshairsBottom, ViewportCenter, Spread, HUDPackage.CrosshairsColor);	
 		}
 	}

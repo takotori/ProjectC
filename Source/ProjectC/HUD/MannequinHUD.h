@@ -40,6 +40,7 @@ public:
 	virtual void DrawHUD() override;
 	void AddCharacterOverlay();
 	void AddAnnouncement();
+	void AddCardPicker();
 
 	UPROPERTY(EditAnywhere, Category = "Player Stats")
 	TSubclassOf<class UUserWidget> CharacterOverlayClass;
@@ -47,11 +48,17 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Announcement")
 	TSubclassOf<class UUserWidget> AnnouncementClass;
 
+	UPROPERTY(EditAnywhere, Category = "Cards")
+	TSubclassOf<class UUserWidget> CardPickerClass;
+
 	UPROPERTY()
 	class UCharacterOverlay* CharacterOverlay;
 
 	UPROPERTY()
 	class UAnnouncement* Announcement;
+
+	UPROPERTY()
+	class UCardPickerWidget* CardPicker;
 
 protected:
 	virtual void BeginPlay() override;

@@ -4,9 +4,6 @@
 #include "Blueprint/UserWidget.h"
 #include "Announcement.generated.h"
 
-/**
- * 
- */
 UCLASS()
 class PROJECTC_API UAnnouncement : public UUserWidget
 {

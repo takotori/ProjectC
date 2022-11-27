@@ -6,6 +6,7 @@
 
 namespace MatchState
 {
+	extern PROJECTC_API const FName PickingCards; // Each player picks a card
 	extern PROJECTC_API const FName Cooldown; // Match duration has been reached. Display winner and begin cooldown timer
 }
 
@@ -24,6 +25,7 @@ public:
 
 	virtual void RequestRespawn(class ACharacter* EliminatedCharacter, AController* EliminatedController);
 
+	
 	void PlayerLeftGame(class AMannequinPlayerState* PlayerLeaving);
 	
 	UPROPERTY(EditDefaultsOnly)

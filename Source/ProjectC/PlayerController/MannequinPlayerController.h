@@ -64,6 +64,7 @@ protected:
 
 	void HandleMatchHasStarted(bool bTeamsMatch = false);
 	void HandleCooldown();
+	void HandlePickingCards();
 
 	UFUNCTION(Server, Reliable)
 	void ServerCheckMatchState();
@@ -85,7 +86,7 @@ protected:
 
 	FString GetInfoText(const TArray<AMannequinPlayerState*>& Players);
 	
-	FString GetTeamsInfoText(class AMannequinGameState* MannequinGameState);
+	FString GetTeamsInfoText(const class AMannequinGameState* MannequinGameState);
 	
 private:
 	UPROPERTY()

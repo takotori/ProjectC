@@ -1,4 +1,3 @@
-
 #include "MatchGameMode.h"
 
 #include "GameFramework/PlayerStart.h"
@@ -10,6 +9,7 @@
 
 namespace MatchState
 {
+	const FName PickingCards = FName("PickingCards");
 	const FName Cooldown = FName("Cooldown");
 }
 
@@ -23,11 +23,13 @@ void AMatchGameMode::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 	if (MatchState == MatchState::WaitingToStart)
 	{
+		SetMatchState(MatchState::PickingCards);
+		
 		CountdownTime = WarmUpTime - GetWorld()->GetTimeSeconds() + LevelStartingTime;
 		if (CountdownTime <= 0.f)
 		{
-			StartMatch();
-		} 
+			// StartMatch(); // Transition game into InProgress
+		}
 	}
 	else if (MatchState == MatchState::InProgress)
 	{
@@ -35,7 +37,7 @@ void AMatchGameMode::Tick(float DeltaSeconds)
 		if (CountdownTime <= 0.f)
 		{
 			SetMatchState(MatchState::Cooldown);
-		} 
+		}
 	}
 	else if (MatchState == MatchState::Cooldown)
 	{
@@ -43,7 +45,7 @@ void AMatchGameMode::Tick(float DeltaSeconds)
 		if (CountdownTime <= 0.f)
 		{
 			RestartGame();
-		} 
+		}
 	}
 }
 
@@ -75,10 +77,14 @@ void AMatchGameMode::PlayerEliminated(AMannequinCharacter* EliminatedCharacter,
                                       AMannequinPlayerController* VictimController,
                                       AMannequinPlayerController* AttackerController)
 {
-	AMannequinPlayerState* AttackerPlayerState = AttackerController ? Cast<AMannequinPlayerState>(AttackerController->PlayerState) : nullptr;
-	AMannequinPlayerState* VictimPlayerState = VictimController ? Cast<AMannequinPlayerState>(VictimController->PlayerState) : nullptr;
+	AMannequinPlayerState* AttackerPlayerState = AttackerController
+		                                             ? Cast<AMannequinPlayerState>(AttackerController->PlayerState)
+		                                             : nullptr;
+	AMannequinPlayerState* VictimPlayerState = VictimController
+		                                           ? Cast<AMannequinPlayerState>(VictimController->PlayerState)
+		                                           : nullptr;
 	AMannequinGameState* MannequinGameState = GetGameState<AMannequinGameState>();
-	
+
 	if (AttackerPlayerState && AttackerPlayerState != VictimPlayerState && GameState)
 	{
 		AttackerPlayerState->AddToScore(1.f);
@@ -98,7 +104,7 @@ void AMatchGameMode::PlayerEliminated(AMannequinCharacter* EliminatedCharacter,
 			MannequinGameState->UpdateTopScore(AttackerPlayerState);
 		}
 	}
-	
+
 	if (EliminatedCharacter)
 	{
 		EliminatedCharacter->Elim(false);
