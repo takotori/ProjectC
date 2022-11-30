@@ -11,8 +11,7 @@ void UReturnToMainMenuWidget::MenuSetup()
 	SetVisibility(ESlateVisibility::Visible);
 	bIsFocusable = true;
 
-	UWorld* World = GetWorld();
-	if (World)
+	if (const UWorld* World = GetWorld())
 	{
 		PlayerController = PlayerController == nullptr ? World->GetFirstPlayerController() : PlayerController;
 		if (PlayerController)
@@ -28,9 +27,8 @@ void UReturnToMainMenuWidget::MenuSetup()
 	{
 		ReturnButton->OnClicked.AddDynamic(this, &UReturnToMainMenuWidget::ReturnButtonClicked);
 	}
-	
-	UGameInstance* GameInstance = GetGameInstance();
-	if (GameInstance)
+
+	if (const UGameInstance* GameInstance = GetGameInstance())
 	{
 		MultiplayerSessionsSubsystem = GameInstance->GetSubsystem<UMultiplayerSessionsSubsystem>();
 		if (MultiplayerSessionsSubsystem)
@@ -50,13 +48,12 @@ bool UReturnToMainMenuWidget::Initialize()
 void UReturnToMainMenuWidget::MenuTearDown()
 {
 	RemoveFromParent();
-	UWorld* World = GetWorld();
-	if (World)
+	if (const UWorld* World = GetWorld())
 	{
 		PlayerController = PlayerController == nullptr ? World->GetFirstPlayerController() : PlayerController;
 		if (PlayerController)
 		{
-			FInputModeGameOnly InputModeData;
+			const FInputModeGameOnly InputModeData;
 			PlayerController->SetInputMode(InputModeData);
 			PlayerController->SetShowMouseCursor(false);
 		}
@@ -79,11 +76,9 @@ void UReturnToMainMenuWidget::OnDestroySession(bool bWasSuccessful)
 		ReturnButton->SetIsEnabled(true);
 		return;
 	}
-	UWorld* World = GetWorld();
-	if (World)
+	if (const UWorld* World = GetWorld())
 	{
-		AGameModeBase* GameMode = World->GetAuthGameMode<AGameModeBase>();
-		if (GameMode)
+		if (AGameModeBase* GameMode = World->GetAuthGameMode<AGameModeBase>())
 		{
 			GameMode->ReturnToMainMenuHost();
 		}

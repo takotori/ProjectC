@@ -12,8 +12,7 @@ void UPauseMenu::MenuSetup()
 	SetVisibility(ESlateVisibility::Visible);
 	bIsFocusable = true;
 
-	UWorld* World = GetWorld();
-	if (World)
+	if (const UWorld* World = GetWorld())
 	{
 		PlayerController = PlayerController == nullptr ? World->GetFirstPlayerController() : PlayerController;
 		if (PlayerController)
@@ -29,9 +28,8 @@ void UPauseMenu::MenuSetup()
 	{
 		ReturnButton->OnClicked.AddDynamic(this, &UPauseMenu::ReturnButtonClicked);
 	}
-	
-	UGameInstance* GameInstance = GetGameInstance();
-	if (GameInstance)
+
+	if (const UGameInstance* GameInstance = GetGameInstance())
 	{
 		MultiplayerSessionsSubsystem = GameInstance->GetSubsystem<UMultiplayerSessionsSubsystem>();
 		if (MultiplayerSessionsSubsystem)
@@ -50,8 +48,7 @@ bool UPauseMenu::Initialize()
 void UPauseMenu::MenuTearDown()
 {
 	RemoveFromParent();
-	UWorld* World = GetWorld();
-	if (World)
+	if (const UWorld* World = GetWorld())
 	{
 		PlayerController = PlayerController == nullptr ? World->GetFirstPlayerController() : PlayerController;
 		if (PlayerController)
@@ -78,11 +75,9 @@ void UPauseMenu::OnDestroySession(bool bWasSuccessful)
 		ReturnButton->SetIsEnabled(true);
 		return;
 	}
-	UWorld* World = GetWorld();
-	if (World)
+	if (const UWorld* World = GetWorld())
 	{
-		AGameModeBase* GameMode = World->GetAuthGameMode<AGameModeBase>();
-		if (GameMode)
+		if (AGameModeBase* GameMode = World->GetAuthGameMode<AGameModeBase>())
 		{
 			GameMode->ReturnToMainMenuHost();
 		}
@@ -100,14 +95,11 @@ void UPauseMenu::OnDestroySession(bool bWasSuccessful)
 void UPauseMenu::ReturnButtonClicked()
 {
 	ReturnButton->SetIsEnabled(false);
-	UWorld* World = GetWorld();
-	if (World)
+	if (const UWorld* World = GetWorld())
 	{
-		APlayerController* FirstPlayerController = World->GetFirstPlayerController();
-		if (FirstPlayerController)
+		if (const APlayerController* FirstPlayerController = World->GetFirstPlayerController())
 		{
-			AMannequinCharacter* MannequinCharacter = Cast<AMannequinCharacter>(FirstPlayerController->GetPawn());
-			if (MannequinCharacter)
+			if (AMannequinCharacter* MannequinCharacter = Cast<AMannequinCharacter>(FirstPlayerController->GetPawn()))
 			{
 				MannequinCharacter->ServerLeaveGame();
 				MannequinCharacter->OnLeftGame.AddDynamic(this, &UPauseMenu::OnPlayerLeftGame);

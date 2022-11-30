@@ -60,13 +60,20 @@ void AMatchGameMode::OnMatchStateSet()
 	Super::OnMatchStateSet();
 	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
 	{
-		AMannequinPlayerController* MannequinPlayer = Cast<AMannequinPlayerController>(*It);
-		if (MannequinPlayer)
+		if (AMannequinPlayerController* MannequinPlayer = Cast<AMannequinPlayerController>(*It))
 		{
 			MannequinPlayer->OnMatchStateSet(MatchState, bTeamsMatch);
 		}
 	}
 }
+
+TArray<ABaseCard*> AMatchGameMode::DrawCards()
+{
+	int32 RandRange = FMath::RandRange(0, 10);
+	
+	return TArray<ABaseCard*> {};
+}
+
 
 float AMatchGameMode::CalculateDamage(AController* Attacker, AController* Victim, float BaseDamage)
 {

@@ -23,8 +23,7 @@ public:
 	                              class AMannequinPlayerController* VictimController,
 	                              AMannequinPlayerController* AttackerController);
 
-	virtual void RequestRespawn(class ACharacter* EliminatedCharacter, AController* EliminatedController);
-
+	virtual void RequestRespawn(ACharacter* EliminatedCharacter, AController* EliminatedController);
 	
 	void PlayerLeftGame(class AMannequinPlayerState* PlayerLeaving);
 	
@@ -40,6 +39,8 @@ public:
 	float LevelStartingTime = 0.f;
 
 	bool bTeamsMatch = false;
+
+	TArray<class ABaseCard*> DrawCards();
 
 protected:
 	virtual void BeginPlay() override;

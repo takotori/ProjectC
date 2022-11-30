@@ -2,6 +2,8 @@
 #include "CardPickerWidget.h"
 
 #include "Components/TextBlock.h"
+#include "GameFramework/GameModeBase.h"
+#include "ProjectC/GameMode/MatchGameMode.h"
 
 void UCardPickerWidget::MenuSetup()
 {
@@ -17,6 +19,15 @@ void UCardPickerWidget::MenuSetup()
 			InputModeData.SetWidgetToFocus(TakeWidget());
 			PlayerController->SetInputMode(InputModeData);
 			PlayerController->SetShowMouseCursor(true);
+		}
+	}
+
+	if (const UWorld* World = GetWorld())
+	{
+		if (AMatchGameMode* MatchGameMode = World->GetAuthGameMode<AMatchGameMode>())
+		{
+			TArray<ABaseCard*> DrawnCards = MatchGameMode->DrawCards();
+			
 		}
 	}
 }

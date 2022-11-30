@@ -22,6 +22,7 @@ public:
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void PostInitializeComponents() override;
+	void CreateBoxComponents();
 	void PlayFireMontage();
 	void PlayReloadMontage();
 	void PlayElimMontage();
@@ -160,6 +161,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	class ULagCompensationComponent* LagCompensation;
+
+	UPROPERTY(VisibleAnywhere)
+	class UCardComponent* CardComponent;
 
 	float AO_Yaw;
 	float AO_Pitch;

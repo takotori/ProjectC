@@ -148,8 +148,9 @@ void AMannequinPlayerController::HandleCooldown()
 			MannequinHUD->Announcement->SetVisibility(ESlateVisibility::Visible);
 			MannequinHUD->Announcement->AnnouncementText->SetText(FText::FromString(Announcement::NewMatchStartsIn));
 
-			AMannequinGameState* MannequinGameState = Cast<AMannequinGameState>(UGameplayStatics::GetGameState(this));
-			AMannequinPlayerState* MannequinPlayerState = GetPlayerState<AMannequinPlayerState>();
+			const AMannequinGameState* MannequinGameState = Cast<AMannequinGameState>(
+				UGameplayStatics::GetGameState(this));
+			const AMannequinPlayerState* MannequinPlayerState = GetPlayerState<AMannequinPlayerState>();
 			if (MannequinGameState && MannequinPlayerState)
 			{
 				const TArray<AMannequinPlayerState*> TopPlayers = MannequinGameState->TopScoringPlayers;
@@ -160,8 +161,8 @@ void AMannequinPlayerController::HandleCooldown()
 			}
 		}
 	}
-	AMannequinCharacter* MannequinCharacter = Cast<AMannequinCharacter>(GetPawn());
-	if (MannequinCharacter && MannequinCharacter->GetCombat())
+	if (AMannequinCharacter* MannequinCharacter = Cast<AMannequinCharacter>(GetPawn()); MannequinCharacter &&
+		MannequinCharacter->GetCombat())
 	{
 		MannequinCharacter->bDisableGameplay = true;
 		MannequinCharacter->GetCombat()->FireButtonPressed(false);
@@ -243,7 +244,7 @@ void AMannequinPlayerController::ServerRequestServerTime_Implementation(float Ti
 }
 
 void AMannequinPlayerController::ClientReportServerTime_Implementation(float TimeOfClientRequest,
-																	   float TimeServerReceivedClientRequest)
+                                                                       float TimeServerReceivedClientRequest)
 {
 	const float RoundTripTime = GetWorld()->GetTimeSeconds() - TimeOfClientRequest;
 	SingleTripTime = 0.5f * RoundTripTime;
@@ -261,7 +262,6 @@ void AMannequinPlayerController::OnRep_ShowTeamScores()
 {
 	bShowTeamScores ? InitTeamScores() : HideTeamScores();
 }
-
 
 void AMannequinPlayerController::HideTeamScores()
 {
@@ -353,8 +353,8 @@ void AMannequinPlayerController::PollInit()
 				if (bInitializeDefeats) SetHUDDefeats(HUDDefeats);
 				if (bInitializeAmmo) SetHUDAmmo(HUDWeaponAmmo);
 				if (bInitializeTeamScores) InitTeamScores();
-				AMannequinCharacter* MannequinCharacter = Cast<AMannequinCharacter>(GetPawn());
-				if (MannequinCharacter && MannequinCharacter->GetCombat())
+				if (const AMannequinCharacter* MannequinCharacter = Cast<AMannequinCharacter>(GetPawn());
+					MannequinCharacter && MannequinCharacter->GetCombat())
 				{
 					if (bInitializeGrenades) SetHUDGrenades(MannequinCharacter->GetCombat()->GetGrenades());
 				}
