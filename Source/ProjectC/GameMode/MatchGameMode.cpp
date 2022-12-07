@@ -23,12 +23,12 @@ void AMatchGameMode::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 	if (MatchState == MatchState::WaitingToStart)
 	{
-		SetMatchState(MatchState::PickingCards);
+		// SetMatchState(MatchState::PickingCards);
 		
 		CountdownTime = WarmUpTime - GetWorld()->GetTimeSeconds() + LevelStartingTime;
 		if (CountdownTime <= 0.f)
 		{
-			// StartMatch(); // Transition game into InProgress
+			StartMatch(); // Transition game into InProgress
 		}
 	}
 	else if (MatchState == MatchState::InProgress)

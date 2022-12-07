@@ -1,16 +1,18 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AbilitySystemInterface.h"
 #include "GameFramework/PlayerState.h"
 #include "ProjectC/Types/Team.h"
 #include "MannequinPlayerState.generated.h"
 
 UCLASS()
-class PROJECTC_API AMannequinPlayerState : public APlayerState
+class PROJECTC_API AMannequinPlayerState : public APlayerState, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
 public:
+	AMannequinPlayerState();
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	// Replication notifies
 	virtual void OnRep_Score() override;
@@ -21,12 +23,23 @@ public:
 	void AddToScore(float ScoreAmount);
 	void AddToDefeats(int32 DefeatsAmount);
 
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+
+protected:
+	virtual void BeginPlay() override;
+
 private:
 	UPROPERTY()
 	class AMannequinCharacter* Character;
 
 	UPROPERTY()
 	class AMannequinPlayerController* Controller;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess = "true"))
+	class UCardAbilitySystemComponent* AbilitySystemComponent;
+	
+	UPROPERTY()
+	const class UDefaultAttributes* AttributeSet;
 
 	UPROPERTY(ReplicatedUsing = OnRep_Defeats)
 	int32 Defeats;

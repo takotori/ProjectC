@@ -1,5 +1,6 @@
 #include "MannequinCharacter.h"
 
+#include "AbilitySystemComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "Camera/CameraComponent.h"
@@ -11,8 +12,10 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Net/UnrealNetwork.h"
 #include "ProjectC/ProjectC.h"
+#include "ProjectC/Abilities/BaseAbility.h"
+#include "ProjectC/Abilities/AttributeSets/DefaultAttributes.h"
 #include "ProjectC/Components//BuffComponent.h"
-#include "ProjectC/Components/CardComponent.h"
+#include "ProjectC/Components/CardAbilitySystemComponent.h"
 #include "ProjectC/Components/CombatComponent.h"
 #include "ProjectC/Components/LagCompensationComponent.h"
 #include "ProjectC/GameMode/MatchGameMode.h"
@@ -53,7 +56,11 @@ AMannequinCharacter::AMannequinCharacter()
 
 	LagCompensation = CreateDefaultSubobject<ULagCompensationComponent>(TEXT("Lag Compensation"));
 
-	CardComponent = CreateDefaultSubobject<UCardComponent>(TEXT("Card Component"));
+	AbilitySystemComponent = CreateDefaultSubobject<UCardAbilitySystemComponent>(TEXT("Ability Component"));
+	AbilitySystemComponent->SetIsReplicated(true);
+	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
+
+	AttributeSet = CreateDefaultSubobject<UDefaultAttributes>(TEXT("Attributes"));
 
 	CreateBoxComponents();
 	for (const auto Box : HitCollisionBoxes)
@@ -76,6 +83,10 @@ void AMannequinCharacter::BeginPlay()
 	if (HasAuthority())
 	{
 		OnTakeAnyDamage.AddDynamic(this, &AMannequinCharacter::ReceiveDamage);
+	}
+	if (AbilitySystemComponent)
+	{
+		AttributeSet = AbilitySystemComponent->GetSet<UDefaultAttributes>();
 	}
 	if (AttachedGrenade)
 	{
@@ -122,9 +133,11 @@ void AMannequinCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 
 	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent))
 	{
+		
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AMannequinCharacter::Move);
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AMannequinCharacter::Look);
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &AMannequinCharacter::Jump);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &AMannequinCharacter::HandleJumpActionTriggered);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &AMannequinCharacter::HandleJumpActionTriggered);
 		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this,
 		                                   &AMannequinCharacter::CrouchPlayer);
 		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Triggered, this, &AMannequinCharacter::Fire);
@@ -317,7 +330,6 @@ void AMannequinCharacter::PlayHitReactMontage()
 	if (Combat == nullptr) return;
 
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-
 	if (AnimInstance && HitReactMontage && !AnimInstance->IsAnyMontagePlaying())
 	{
 		AnimInstance->Montage_Play(HitReactMontage);
@@ -331,6 +343,47 @@ void AMannequinCharacter::ThrowGrenade()
 	if (Combat)
 	{
 		Combat->ThrowGrenade();
+	}
+}
+
+void AMannequinCharacter::HandleJumpActionTriggered(const FInputActionValue& Value)
+{
+	SendAbilityLocalInput(Value, EGSAbilityInputID::Jump);
+}
+
+void AMannequinCharacter::HandleCrouchActionTriggered(const FInputActionValue& Value)
+{
+	SendAbilityLocalInput(Value, EGSAbilityInputID::Crouch);
+}
+
+void AMannequinCharacter::HandleFireActionTriggered(const FInputActionValue& Value)
+{
+	SendAbilityLocalInput(Value, EGSAbilityInputID::Fire);
+}
+
+void AMannequinCharacter::HandleFireActionCompleted(const FInputActionValue& Value)
+{
+	SendAbilityLocalInput(Value, EGSAbilityInputID::Fire);
+}
+
+void AMannequinCharacter::HandleReloadActionTriggered(const FInputActionValue& Value)
+{
+	SendAbilityLocalInput(Value, EGSAbilityInputID::Reload);
+}
+
+void AMannequinCharacter::HandleThrowGrenadeActionTriggered(const FInputActionValue& Value)
+{
+	SendAbilityLocalInput(Value, EGSAbilityInputID::ThrowGrenade);
+}
+
+void AMannequinCharacter::SendAbilityLocalInput(const FInputActionValue& Value, EGSAbilityInputID InputId)
+{
+	if (AbilitySystemComponent && Value.Get<bool>())
+	{
+		AbilitySystemComponent->AbilityLocalInputPressed(static_cast<int32>(InputId));
+	} else
+	{
+		AbilitySystemComponent->AbilityLocalInputReleased(static_cast<int32>(InputId));
 	}
 }
 
@@ -377,7 +430,7 @@ void AMannequinCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, cons
 void AMannequinCharacter::CrouchPlayer()
 {
 	if (bDisableGameplay) return;
-	bIsCrouched ? UnCrouch() : CrouchPlayer();
+	bIsCrouched ? UnCrouch() : Crouch();
 }
 
 void AMannequinCharacter::AimOffset(float DeltaTime)
@@ -391,8 +444,9 @@ void AMannequinCharacter::AimOffset(float DeltaTime)
 
 	if (Speed == 0.f && !bIsInAir) //standing still
 	{
-		FRotator CurrentAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
-		FRotator DeltaAimRotation = UKismetMathLibrary::NormalizedDeltaRotator(CurrentAimRotation, StartingAimRotation);
+		const FRotator CurrentAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
+		const FRotator DeltaAimRotation = UKismetMathLibrary::NormalizedDeltaRotator(
+			CurrentAimRotation, StartingAimRotation);
 		AO_Yaw = DeltaAimRotation.Yaw;
 	}
 
@@ -557,6 +611,65 @@ void AMannequinCharacter::StartDissolve()
 	}
 }
 
+void AMannequinCharacter::InitializeAttributes()
+{
+	if (AbilitySystemComponent && DefaultAttributeEffect)
+	{
+		FGameplayEffectContextHandle EffectContext = AbilitySystemComponent->MakeEffectContext();
+		EffectContext.AddSourceObject(this);
+
+		const FGameplayEffectSpecHandle SpecHandle = AbilitySystemComponent->MakeOutgoingSpec(
+			DefaultAttributeEffect, 1, EffectContext);
+		if (SpecHandle.IsValid())
+		{
+			FActiveGameplayEffectHandle GEHandle = AbilitySystemComponent->ApplyGameplayEffectSpecToSelf(
+				*SpecHandle.Data.Get());
+		}
+	}
+}
+
+void AMannequinCharacter::GiveAbilities()
+{
+	if (HasAuthority() && AbilitySystemComponent)
+	{
+		for (auto& Ability : DefaultAbilities)
+		{
+			AbilitySystemComponent->GiveAbility(
+				FGameplayAbilitySpec(Ability, 1, static_cast<int32>(Ability.GetDefaultObject()->AbilityInputID), this));
+		}
+	}
+}
+
+void AMannequinCharacter::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+	//Server GAS init
+	MannequinPlayerState = MannequinPlayerState == nullptr
+		                       ? GetPlayerState<AMannequinPlayerState>()
+		                       : MannequinPlayerState;
+	if (MannequinPlayerState)
+	{
+		AbilitySystemComponent = Cast<UCardAbilitySystemComponent>(MannequinPlayerState->GetAbilitySystemComponent());
+		MannequinPlayerState->GetAbilitySystemComponent()->InitAbilityActorInfo(MannequinPlayerState, this);
+	}
+	InitializeAttributes();
+	GiveAbilities();
+}
+
+void AMannequinCharacter::OnRep_PlayerState()
+{
+	Super::OnRep_PlayerState();
+	MannequinPlayerState = MannequinPlayerState == nullptr
+		                       ? GetPlayerState<AMannequinPlayerState>()
+		                       : MannequinPlayerState;
+	if (MannequinPlayerState)
+	{
+		AbilitySystemComponent = Cast<UCardAbilitySystemComponent>(MannequinPlayerState->GetAbilitySystemComponent());
+		MannequinPlayerState->GetAbilitySystemComponent()->InitAbilityActorInfo(MannequinPlayerState, this);
+	}
+	InitializeAttributes();
+}
+
 AWeapon* AMannequinCharacter::GetEquippedWeapon()
 {
 	if (Combat == nullptr) return nullptr;
@@ -647,4 +760,9 @@ void AMannequinCharacter::CreateBoxComponents()
 	foot_r = CreateDefaultSubobject<UBoxComponent>(TEXT("foot_r"));
 	foot_r->SetupAttachment(GetMesh(), FName("foot_r"));
 	HitCollisionBoxes.Add(FName("foot_r"), foot_r);
+}
+
+UAbilitySystemComponent* AMannequinCharacter::GetAbilitySystemComponent() const
+{
+	return AbilitySystemComponent;
 }

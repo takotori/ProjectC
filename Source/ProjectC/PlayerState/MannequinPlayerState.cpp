@@ -1,9 +1,29 @@
 
 #include "MannequinPlayerState.h"
 
+#include "AbilitySystemComponent.h"
 #include "ProjectC/Character/MannequinCharacter.h"
 #include "ProjectC/PlayerController/MannequinPlayerController.h"
 #include "Net/UnrealNetwork.h"
+#include "ProjectC/Abilities/AttributeSets/DefaultAttributes.h"
+#include "ProjectC/Components/CardAbilitySystemComponent.h"
+
+AMannequinPlayerState::AMannequinPlayerState()
+{
+	AbilitySystemComponent = CreateDefaultSubobject<UCardAbilitySystemComponent>(TEXT("Ability Component"));
+	AbilitySystemComponent->SetIsReplicated(true);
+	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
+
+	AttributeSet = CreateDefaultSubobject<UDefaultAttributes>(TEXT("Attributes"));
+
+	NetUpdateFrequency = 66.f;
+}
+
+void AMannequinPlayerState::BeginPlay()
+{
+	Super::BeginPlay();
+	if (AbilitySystemComponent) AttributeSet = AbilitySystemComponent->GetSet<UDefaultAttributes>();
+}
 
 void AMannequinPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -19,10 +39,7 @@ void AMannequinPlayerState::AddToScore(float ScoreAmount)
 	if (Character)
 	{
 		Controller = Controller == nullptr ? Cast<AMannequinPlayerController>(Character->Controller) : Controller;
-		if (Controller)
-		{
-			Controller->SetHUDScore(GetScore());
-		}
+		if (Controller) Controller->SetHUDScore(GetScore());
 	}
 }
 
@@ -33,12 +50,8 @@ void AMannequinPlayerState::OnRep_Score()
 	if (Character)
 	{
 		Controller = Controller == nullptr ? Cast<AMannequinPlayerController>(Character->Controller) : Controller;
-		if (Controller)
-		{
-			Controller->SetHUDScore(GetScore());
-		}
+		if (Controller) Controller->SetHUDScore(GetScore());
 	}
-	
 }
 
 void AMannequinPlayerState::AddToDefeats(int32 DefeatsAmount)
@@ -48,10 +61,7 @@ void AMannequinPlayerState::AddToDefeats(int32 DefeatsAmount)
 	if (Character)
 	{
 		Controller = Controller == nullptr ? Cast<AMannequinPlayerController>(Character->Controller) : Controller;
-		if (Controller)
-		{
-			Controller->SetHUDDefeats(Defeats);
-		}
+		if (Controller) Controller->SetHUDDefeats(Defeats);
 	}
 }
 
@@ -61,9 +71,11 @@ void AMannequinPlayerState::OnRep_Defeats()
 	if (Character)
 	{
 		Controller = Controller == nullptr ? Cast<AMannequinPlayerController>(Character->Controller) : Controller;
-		if (Controller)
-		{
-			Controller->SetHUDDefeats(Defeats);
-		}
+		if (Controller) Controller->SetHUDDefeats(Defeats);
 	}
+}
+
+UAbilitySystemComponent* AMannequinPlayerState::GetAbilitySystemComponent() const
+{
+	return AbilitySystemComponent;
 }

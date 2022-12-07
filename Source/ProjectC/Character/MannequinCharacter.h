@@ -1,9 +1,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AbilitySystemInterface.h"
 #include "InputActionValue.h"
 #include "Components/TimelineComponent.h"
 #include "GameFramework/Character.h"
+#include "ProjectC/ProjectC.h"
 #include "ProjectC/GameMode/MatchGameMode.h"
 #include "ProjectC/Interfaces/InteractWithCrosshairsInterface.h"
 #include "ProjectC/Types/CombatState.h"
@@ -12,7 +14,7 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnLeftGame);
 
 UCLASS()
-class PROJECTC_API AMannequinCharacter : public ACharacter, public IInteractWithCrosshairsInterface
+class PROJECTC_API AMannequinCharacter : public ACharacter, public IInteractWithCrosshairsInterface, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
@@ -34,6 +36,18 @@ public:
 
 	UPROPERTY(Replicated)
 	bool bDisableGameplay = false;
+	
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+	virtual void InitializeAttributes();
+	virtual void GiveAbilities();
+	virtual void PossessedBy(AController* NewController) override;
+	virtual void OnRep_PlayerState() override;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "GAS")
+	TSubclassOf<class UGameplayEffect> DefaultAttributeEffect;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "GAS")
+	TArray<TSubclassOf<class UBaseAbility>> DefaultAbilities;
 
 	void UpdateHUDHealth();
 	void UpdateHUDShield();
@@ -52,13 +66,18 @@ public:
 	UPROPERTY()
 	AMatchGameMode* MatchGameMode;
 
+	void Fire();
+	void FireButtonReleased();
+
 protected:
 	virtual void BeginPlay() override;
 
+	void Move(const FInputActionValue& Value);
+	void Look(const FInputActionValue& Value);
+	
 	void CrouchPlayer();
 	void AimOffset(float DeltaTime);
-	void Fire();
-	void FireButtonReleased();
+	
 	void Reload();
 	void PlayHitReactMontage();
 	void ThrowGrenade();
@@ -90,66 +109,27 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* QuitAction;
 
-	void Move(const FInputActionValue& Value);
-	void Look(const FInputActionValue& Value);
+	void HandleJumpActionTriggered(const FInputActionValue& Value);
+	void HandleCrouchActionTriggered(const FInputActionValue& Value);
+	void HandleFireActionTriggered(const FInputActionValue& Value);
+	void HandleFireActionCompleted(const FInputActionValue& Value);
+	void HandleReloadActionTriggered(const FInputActionValue& Value);
+	void HandleThrowGrenadeActionTriggered(const FInputActionValue& Value);
+
+	void SendAbilityLocalInput(const FInputActionValue& Value, EGSAbilityInputID InputId);
+	
 
 	UFUNCTION()
 	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
-	                   class AController* InstigatorController, AActor* DamageCauser);
+	                   AController* InstigatorController, AActor* DamageCauser);
 
 	// Poll for any relevant classes and initialize HUD
 	void PollInit();
 
-	// Hit boxes used for server-side rewind
-	UPROPERTY(EditAnywhere)
-	UBoxComponent* head;
-
-	UPROPERTY(EditAnywhere)
-	UBoxComponent* pelvis;
-
-	UPROPERTY(EditAnywhere)
-	UBoxComponent* spine_02;
-
-	UPROPERTY(EditAnywhere)
-	UBoxComponent* spine_03;
-
-	UPROPERTY(EditAnywhere)
-	UBoxComponent* upperarm_l;
-
-	UPROPERTY(EditAnywhere)
-	UBoxComponent* upperarm_r;
-
-	UPROPERTY(EditAnywhere)
-	UBoxComponent* lowerarm_l;
-
-	UPROPERTY(EditAnywhere)
-	UBoxComponent* lowerarm_r;
-
-	UPROPERTY(EditAnywhere)
-	UBoxComponent* hand_l;
-
-	UPROPERTY(EditAnywhere)
-	UBoxComponent* hand_r;
-
-	UPROPERTY(EditAnywhere)
-	UBoxComponent* thigh_l;
-
-	UPROPERTY(EditAnywhere)
-	UBoxComponent* thigh_r;
-
-	UPROPERTY(EditAnywhere)
-	UBoxComponent* calf_l;
-
-	UPROPERTY(EditAnywhere)
-	UBoxComponent* calf_r;
-
-	UPROPERTY(EditAnywhere)
-	UBoxComponent* foot_l;
-
-	UPROPERTY(EditAnywhere)
-	UBoxComponent* foot_r;
-
 private:
+	UPROPERTY()
+	AMannequinPlayerController* MannequinPlayerController;
+	
 	UPROPERTY(VisibleAnywhere, Category = "Camera")
 	class UCameraComponent* FollowCamera;
 
@@ -162,8 +142,11 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	class ULagCompensationComponent* LagCompensation;
 
-	UPROPERTY(VisibleAnywhere)
-	class UCardComponent* CardComponent;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(AllowPrivateAccess = "true"))
+	class UCardAbilitySystemComponent* AbilitySystemComponent;
+
+	UPROPERTY()
+	const class UDefaultAttributes* AttributeSet;
 
 	float AO_Yaw;
 	float AO_Pitch;
@@ -171,7 +154,7 @@ private:
 	FRotator StartingAimRotation;
 
 	UPROPERTY(EditAnywhere, Category = "Combat")
-	class UAnimMontage* FireWeaponMontage;
+	UAnimMontage* FireWeaponMontage;
 
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	UAnimMontage* ReloadMontage;
@@ -204,9 +187,6 @@ private:
 
 	UFUNCTION()
 	void OnRep_Shield(float LastShield);
-
-	UPROPERTY()
-	class AMannequinPlayerController* MannequinPlayerController;
 
 	bool bElimmed = false;
 
@@ -276,4 +256,54 @@ public:
 	FORCEINLINE UBuffComponent* GetBuff() const { return Buff; }
 	FORCEINLINE ULagCompensationComponent* GetLagCompensation() const { return LagCompensation; }
 	bool IsLocallyReloading();
+
+protected:
+	// Hit boxes used for server-side rewind
+	UPROPERTY(EditAnywhere)
+	UBoxComponent* head;
+
+	UPROPERTY(EditAnywhere)
+	UBoxComponent* pelvis;
+
+	UPROPERTY(EditAnywhere)
+	UBoxComponent* spine_02;
+
+	UPROPERTY(EditAnywhere)
+	UBoxComponent* spine_03;
+
+	UPROPERTY(EditAnywhere)
+	UBoxComponent* upperarm_l;
+
+	UPROPERTY(EditAnywhere)
+	UBoxComponent* upperarm_r;
+
+	UPROPERTY(EditAnywhere)
+	UBoxComponent* lowerarm_l;
+
+	UPROPERTY(EditAnywhere)
+	UBoxComponent* lowerarm_r;
+
+	UPROPERTY(EditAnywhere)
+	UBoxComponent* hand_l;
+
+	UPROPERTY(EditAnywhere)
+	UBoxComponent* hand_r;
+
+	UPROPERTY(EditAnywhere)
+	UBoxComponent* thigh_l;
+
+	UPROPERTY(EditAnywhere)
+	UBoxComponent* thigh_r;
+
+	UPROPERTY(EditAnywhere)
+	UBoxComponent* calf_l;
+
+	UPROPERTY(EditAnywhere)
+	UBoxComponent* calf_r;
+
+	UPROPERTY(EditAnywhere)
+	UBoxComponent* foot_l;
+
+	UPROPERTY(EditAnywhere)
+	UBoxComponent* foot_r;
 };

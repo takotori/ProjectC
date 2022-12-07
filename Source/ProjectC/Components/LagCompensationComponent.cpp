@@ -20,10 +20,12 @@ void ULagCompensationComponent::ServerScoreRequest_Implementation(AMannequinChar
                                                                   const FVector_NetQuantize& TraceStart,
                                                                   const FVector_NetQuantize& HitLocation, float HitTime)
 {
-	FServerSideRewindResult Confirm = ServerSideRewind(HitCharacter, TraceStart, HitLocation, HitTime);
+	const FServerSideRewindResult Confirm = ServerSideRewind(HitCharacter, TraceStart, HitLocation, HitTime);
 	if (Character && Character->GetEquippedWeapon() && HitCharacter && Confirm.bHitConfirmed)
 	{
-		const float Damage = Confirm.bHeadShot ? Character->GetEquippedWeapon()->GetHeadDamage() : Character->GetEquippedWeapon()->GetDamage();
+		const float Damage = Confirm.bHeadShot
+			                     ? Character->GetEquippedWeapon()->GetHeadDamage()
+			                     : Character->GetEquippedWeapon()->GetDamage();
 		UGameplayStatics::ApplyDamage(
 			HitCharacter,
 			Damage,
@@ -35,12 +37,16 @@ void ULagCompensationComponent::ServerScoreRequest_Implementation(AMannequinChar
 }
 
 void ULagCompensationComponent::ProjectileServerScoreRequest_Implementation(AMannequinCharacter* HitCharacter,
-	const FVector_NetQuantize& TraceStart, const FVector_NetQuantize100& InitialVelocity, float HitTime)
+                                                                            const FVector_NetQuantize& TraceStart,
+                                                                            const FVector_NetQuantize100&
+                                                                            InitialVelocity, float HitTime)
 {
-	FServerSideRewindResult Confirm = ProjectileServerSideRewind(HitCharacter, TraceStart, InitialVelocity, HitTime);
+	const FServerSideRewindResult Confirm = ProjectileServerSideRewind(HitCharacter, TraceStart, InitialVelocity, HitTime);
 	if (Character && Character->GetEquippedWeapon() && HitCharacter && Confirm.bHitConfirmed)
 	{
-		const float Damage = Confirm.bHeadShot ? Character->GetEquippedWeapon()->GetHeadDamage() : Character->GetEquippedWeapon()->GetDamage();
+		const float Damage = Confirm.bHeadShot
+			                     ? Character->GetEquippedWeapon()->GetHeadDamage()
+			                     : Character->GetEquippedWeapon()->GetDamage();
 		UGameplayStatics::ApplyDamage(
 			HitCharacter,
 			Damage,
@@ -88,7 +94,9 @@ FServerSideRewindResult ULagCompensationComponent::ServerSideRewind(AMannequinCh
 }
 
 FServerSideRewindResult ULagCompensationComponent::ProjectileServerSideRewind(AMannequinCharacter* HitCharacter,
-	const FVector_NetQuantize& TraceStart, const FVector_NetQuantize100& InitialVelocity, float HitTime)
+                                                                              const FVector_NetQuantize& TraceStart,
+                                                                              const FVector_NetQuantize100&
+                                                                              InitialVelocity, float HitTime)
 {
 	FFramePackage FrameToCheck = GetFrameToCheck(HitCharacter, HitTime);
 	return ProjectileConfirmHit(FrameToCheck, HitCharacter, TraceStart, InitialVelocity, HitTime);
@@ -200,11 +208,10 @@ FServerSideRewindResult ULagCompensationComponent::ConfirmHit(const FFramePackag
 	HeadBox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	HeadBox->SetCollisionResponseToChannel(ECC_HitBox, ECollisionResponse::ECR_Block);
 
-	FHitResult ConfirmHitResult;
 	const FVector TraceEnd = TraceStart + (HitLocation - TraceStart) * 1.25f;
-	UWorld* World = GetWorld();
-	if (World)
+	if (UWorld* World = GetWorld())
 	{
+		FHitResult ConfirmHitResult;
 		World->LineTraceSingleByChannel(
 			ConfirmHitResult,
 			TraceStart,
@@ -245,8 +252,11 @@ FServerSideRewindResult ULagCompensationComponent::ConfirmHit(const FFramePackag
 	return FServerSideRewindResult{false, false};
 }
 
-FServerSideRewindResult ULagCompensationComponent::ProjectileConfirmHit(const FFramePackage& Package, AMannequinCharacter* HitCharacter,
-	const FVector_NetQuantize& TraceStart, const FVector_NetQuantize100& InitialVelocity, float HitTime)
+FServerSideRewindResult ULagCompensationComponent::ProjectileConfirmHit(const FFramePackage& Package,
+                                                                        AMannequinCharacter* HitCharacter,
+                                                                        const FVector_NetQuantize& TraceStart,
+                                                                        const FVector_NetQuantize100& InitialVelocity,
+                                                                        float HitTime)
 {
 	if (HitCharacter == nullptr) return FServerSideRewindResult();
 	FFramePackage CurrentFrame;
@@ -300,10 +310,9 @@ FServerSideRewindResult ULagCompensationComponent::ProjectileConfirmHit(const FF
 	return FServerSideRewindResult{false, false};
 }
 
-FShotgunServerSideRewindResult ULagCompensationComponent::ShotgunConfirmHit(const TArray<FFramePackage>& FramePackages,
-                                                                            const FVector_NetQuantize& TraceStart,
-                                                                            const TArray<FVector_NetQuantize>&
-                                                                            HitLocations)
+FShotgunServerSideRewindResult ULagCompensationComponent::ShotgunConfirmHit(
+	const TArray<FFramePackage>& FramePackages, const FVector_NetQuantize& TraceStart,
+	const TArray<FVector_NetQuantize>& HitLocations)
 {
 	for (auto& Frame : FramePackages)
 	{
@@ -340,8 +349,7 @@ FShotgunServerSideRewindResult ULagCompensationComponent::ShotgunConfirmHit(cons
 				TraceEnd,
 				ECC_HitBox
 			);
-			AMannequinCharacter* MannequinCharacter = Cast<AMannequinCharacter>(ConfirmHitResult.GetActor());
-			if (MannequinCharacter)
+			if (AMannequinCharacter* MannequinCharacter = Cast<AMannequinCharacter>(ConfirmHitResult.GetActor()))
 			{
 				if (ShotgunResult.Headshots.Contains(MannequinCharacter))
 				{
@@ -373,18 +381,17 @@ FShotgunServerSideRewindResult ULagCompensationComponent::ShotgunConfirmHit(cons
 	// Check for body shots
 	for (auto& HitLocation : HitLocations)
 	{
-		FHitResult ConfirmHitResult;
 		const FVector TraceEnd = TraceStart + (HitLocation - TraceStart) * 1.25f;
 		if (World)
 		{
+			FHitResult ConfirmHitResult;
 			World->LineTraceSingleByChannel(
 				ConfirmHitResult,
 				TraceStart,
 				TraceEnd,
 				ECC_HitBox
 			);
-			AMannequinCharacter* MannequinCharacter = Cast<AMannequinCharacter>(ConfirmHitResult.GetActor());
-			if (MannequinCharacter)
+			if (AMannequinCharacter* MannequinCharacter = Cast<AMannequinCharacter>(ConfirmHitResult.GetActor()))
 			{
 				if (ShotgunResult.Bodyshots.Contains(MannequinCharacter))
 				{
