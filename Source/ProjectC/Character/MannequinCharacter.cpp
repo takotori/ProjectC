@@ -131,21 +131,20 @@ void AMannequinCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent))
+	if (UEnhancedInputComponent* InComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent))
 	{
 		
-		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AMannequinCharacter::Move);
-		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AMannequinCharacter::Look);
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &AMannequinCharacter::HandleJumpActionTriggered);
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &AMannequinCharacter::HandleJumpActionTriggered);
-		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this,
-		                                   &AMannequinCharacter::CrouchPlayer);
-		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Triggered, this, &AMannequinCharacter::Fire);
-		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Completed, this,
-		                                   &AMannequinCharacter::FireButtonReleased);
-		EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Triggered, this, &AMannequinCharacter::Reload);
-		EnhancedInputComponent->BindAction(ThrowGrenadeAction, ETriggerEvent::Triggered, this,
-		                                   &AMannequinCharacter::ThrowGrenade);
+		InComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AMannequinCharacter::Move);
+		InComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AMannequinCharacter::Look);
+		
+		InComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &AMannequinCharacter::HandleJumpActionTriggered);
+		InComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &AMannequinCharacter::HandleJumpActionTriggered);
+		InComponent->BindAction(CrouchAction, ETriggerEvent::Started, this, &AMannequinCharacter::HandleCrouchActionTriggered);
+		
+		InComponent->BindAction(FireAction, ETriggerEvent::Triggered, this, &AMannequinCharacter::Fire);
+		InComponent->BindAction(FireAction, ETriggerEvent::Completed, this, &AMannequinCharacter::FireButtonReleased);
+		InComponent->BindAction(ReloadAction, ETriggerEvent::Triggered, this, &AMannequinCharacter::Reload);
+		InComponent->BindAction(ThrowGrenadeAction, ETriggerEvent::Triggered, this, &AMannequinCharacter::ThrowGrenade);
 	}
 }
 

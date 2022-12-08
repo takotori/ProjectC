@@ -12,8 +12,8 @@ class PROJECTC_API UBaseAbility : public UGameplayAbility
 	GENERATED_BODY()
 
 public:
+	UFUNCTION(BlueprintCallable)
 	AMannequinCharacter* GetCharacterFromActorInfo() const;
-	
 	
 	// Abilities with this set will automatically activate when the input is pressed
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Ability")

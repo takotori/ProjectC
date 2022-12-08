@@ -1,4 +1,3 @@
-
 #include "JumpAbility.h"
 
 UJumpAbility::UJumpAbility()
@@ -7,7 +6,8 @@ UJumpAbility::UJumpAbility()
 }
 
 void UJumpAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
-	const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
+                              const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility,
+                              bool bWasCancelled)
 {
 	CharacterJumpStop(); // In case ability blueprint doesn't call it
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
@@ -19,8 +19,14 @@ void UJumpAbility::CharacterJumpStart()
 	{
 		if (MannequinCharacter->IsLocallyControlled() && !MannequinCharacter->bPressedJump)
 		{
-			MannequinCharacter->UnCrouch();
-			MannequinCharacter->Jump();
+			if (MannequinCharacter->bIsCrouched)
+			{
+				MannequinCharacter->UnCrouch();
+			}
+			else
+			{
+				MannequinCharacter->Jump();
+			}
 		}
 	}
 }
