@@ -146,7 +146,7 @@ private:
 	class UCardAbilitySystemComponent* AbilitySystemComponent;
 
 	UPROPERTY()
-	const class UDefaultAttributes* AttributeSet;
+	const class UCharacterAttributes* AttributeSet;
 
 	float AO_Yaw;
 	float AO_Pitch;

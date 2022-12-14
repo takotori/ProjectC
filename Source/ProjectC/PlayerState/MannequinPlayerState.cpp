@@ -5,7 +5,7 @@
 #include "ProjectC/Character/MannequinCharacter.h"
 #include "ProjectC/PlayerController/MannequinPlayerController.h"
 #include "Net/UnrealNetwork.h"
-#include "ProjectC/Abilities/AttributeSets/DefaultAttributes.h"
+#include "ProjectC/Abilities/AttributeSets/CharacterAttributes.h"
 #include "ProjectC/Components/CardAbilitySystemComponent.h"
 
 AMannequinPlayerState::AMannequinPlayerState()
@@ -14,7 +14,7 @@ AMannequinPlayerState::AMannequinPlayerState()
 	AbilitySystemComponent->SetIsReplicated(true);
 	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
 
-	AttributeSet = CreateDefaultSubobject<UDefaultAttributes>(TEXT("Attributes"));
+	AttributeSet = CreateDefaultSubobject<UCharacterAttributes>(TEXT("Attributes"));
 
 	NetUpdateFrequency = 66.f;
 }
@@ -22,7 +22,7 @@ AMannequinPlayerState::AMannequinPlayerState()
 void AMannequinPlayerState::BeginPlay()
 {
 	Super::BeginPlay();
-	if (AbilitySystemComponent) AttributeSet = AbilitySystemComponent->GetSet<UDefaultAttributes>();
+	if (AbilitySystemComponent) AttributeSet = AbilitySystemComponent->GetSet<UCharacterAttributes>();
 }
 
 void AMannequinPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

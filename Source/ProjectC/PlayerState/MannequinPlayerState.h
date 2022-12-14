@@ -39,7 +39,7 @@ private:
 	class UCardAbilitySystemComponent* AbilitySystemComponent;
 	
 	UPROPERTY()
-	const class UDefaultAttributes* AttributeSet;
+	const class UCharacterAttributes* AttributeSet;
 
 	UPROPERTY(ReplicatedUsing = OnRep_Defeats)
 	int32 Defeats;

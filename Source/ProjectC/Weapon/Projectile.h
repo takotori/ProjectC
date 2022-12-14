@@ -67,7 +67,7 @@ protected:
 	UPROPERTY()
 	class UNiagaraComponent* TrailSystemComponent;
 	
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* ProjectileMesh;
 	
 private:

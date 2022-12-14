@@ -13,7 +13,7 @@
 #include "Net/UnrealNetwork.h"
 #include "ProjectC/ProjectC.h"
 #include "ProjectC/Abilities/BaseAbility.h"
-#include "ProjectC/Abilities/AttributeSets/DefaultAttributes.h"
+#include "ProjectC/Abilities/AttributeSets/CharacterAttributes.h"
 #include "ProjectC/Components//BuffComponent.h"
 #include "ProjectC/Components/CardAbilitySystemComponent.h"
 #include "ProjectC/Components/CombatComponent.h"
@@ -60,7 +60,7 @@ AMannequinCharacter::AMannequinCharacter()
 	AbilitySystemComponent->SetIsReplicated(true);
 	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
 
-	AttributeSet = CreateDefaultSubobject<UDefaultAttributes>(TEXT("Attributes"));
+	AttributeSet = CreateDefaultSubobject<UCharacterAttributes>(TEXT("Attributes"));
 
 	CreateBoxComponents();
 	for (const auto Box : HitCollisionBoxes)
@@ -86,7 +86,7 @@ void AMannequinCharacter::BeginPlay()
 	}
 	if (AbilitySystemComponent)
 	{
-		AttributeSet = AbilitySystemComponent->GetSet<UDefaultAttributes>();
+		AttributeSet = AbilitySystemComponent->GetSet<UCharacterAttributes>();
 	}
 	if (AttachedGrenade)
 	{
@@ -141,8 +141,11 @@ void AMannequinCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 		InComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &AMannequinCharacter::HandleJumpActionTriggered);
 		InComponent->BindAction(CrouchAction, ETriggerEvent::Started, this, &AMannequinCharacter::HandleCrouchActionTriggered);
 		
-		InComponent->BindAction(FireAction, ETriggerEvent::Triggered, this, &AMannequinCharacter::Fire);
-		InComponent->BindAction(FireAction, ETriggerEvent::Completed, this, &AMannequinCharacter::FireButtonReleased);
+		// InComponent->BindAction(FireAction, ETriggerEvent::Triggered, this, &AMannequinCharacter::Fire);
+		// InComponent->BindAction(FireAction, ETriggerEvent::Completed, this, &AMannequinCharacter::FireButtonReleased);
+		InComponent->BindAction(FireAction, ETriggerEvent::Triggered, this, &AMannequinCharacter::HandleFireActionTriggered);
+		InComponent->BindAction(FireAction, ETriggerEvent::Completed, this, &AMannequinCharacter::HandleFireActionCompleted);
+		
 		InComponent->BindAction(ReloadAction, ETriggerEvent::Triggered, this, &AMannequinCharacter::Reload);
 		InComponent->BindAction(ThrowGrenadeAction, ETriggerEvent::Triggered, this, &AMannequinCharacter::ThrowGrenade);
 	}

@@ -9,6 +9,10 @@
 
 AProjectileBullet::AProjectileBullet()
 {
+	ProjectileMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Projectile Mesh"));
+	ProjectileMesh->SetupAttachment(RootComponent);
+	ProjectileMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
 	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovementComponent"));
 	ProjectileMovementComponent->bRotationFollowsVelocity = true;
 	ProjectileMovementComponent->SetIsReplicated(true);
@@ -39,13 +43,11 @@ void AProjectileBullet::BeginPlay()
 void AProjectileBullet::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
                               FVector NormalImpulse, const FHitResult& Hit)
 {
-	AMannequinCharacter* OwnerCharacer = Cast<AMannequinCharacter>(GetOwner());
-	if (OwnerCharacer)
+	if (const AMannequinCharacter* OwnerCharacter = Cast<AMannequinCharacter>(GetOwner()))
 	{
-		AMannequinPlayerController* OwnerController = Cast<AMannequinPlayerController>(OwnerCharacer->Controller);
-		if (OwnerController)
+		if (AMannequinPlayerController* OwnerController = Cast<AMannequinPlayerController>(OwnerCharacter->Controller))
 		{
-			if (OwnerCharacer->HasAuthority() && !bUseServerSideRewind)
+			if (OwnerCharacter->HasAuthority() && !bUseServerSideRewind)
 			{
 				const float DamageToCause = Hit.BoneName.ToString() == FString("head") ? HeadShotDamage : Damage;
 				UGameplayStatics::ApplyDamage(
@@ -59,10 +61,10 @@ void AProjectileBullet::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, 
 				return;
 			}
 			AMannequinCharacter* HitCharacter = Cast<AMannequinCharacter>(OtherActor);
-			if (bUseServerSideRewind && OwnerCharacer->GetLagCompensation() && OwnerCharacer->IsLocallyControlled() &&
+			if (bUseServerSideRewind && OwnerCharacter->GetLagCompensation() && OwnerCharacter->IsLocallyControlled() &&
 				HitCharacter)
 			{
-				OwnerCharacer->GetLagCompensation()->ProjectileServerScoreRequest(
+				OwnerCharacter->GetLagCompensation()->ProjectileServerScoreRequest(
 					HitCharacter,
 					TraceStart,
 					InitialVelocity,
