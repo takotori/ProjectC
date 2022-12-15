@@ -1,7 +1,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AbilitySystemInterface.h"
 #include "GameFramework/Actor.h"
+#include "ProjectC/Character/MannequinCharacter.h"
+#include "ProjectC/Components/CardAbilitySystemComponent.h"
 #include "ProjectC/Types/WeaponTypes.h"
 #include "Weapon.generated.h"
 
@@ -24,7 +27,7 @@ enum class EFireType : uint8
 };
 
 UCLASS()
-class PROJECTC_API AWeapon : public AActor
+class PROJECTC_API AWeapon : public AActor, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
@@ -32,6 +35,15 @@ public:
 	AWeapon();
 	virtual void Tick(float DeltaTime) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	void SetOwningCharacter(AMannequinCharacter* Character);
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+	void AddAbilities();
+	void InitializeAttributes();
+	
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "GAS")
+	TSubclassOf<UGameplayEffect> DefaultAttributeEffect;
+
 	virtual void OnRep_Owner() override;
 	void SetHUDAmmo();
 	virtual void Fire(const FVector& HitTarget);
@@ -39,7 +51,7 @@ public:
 
 	// Texture for weapon crosshair
 	UPROPERTY(EditAnywhere, Category = Crosshairs)
-	class UTexture2D* CrosshairsCenter;
+	UTexture2D* CrosshairsCenter;
 
 	UPROPERTY(EditAnywhere, Category = Crosshairs)
 	UTexture2D* CrosshairsLeft;
@@ -73,6 +85,12 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+	UPROPERTY()
+	UCardAbilitySystemComponent* AbilitySystemComponent;
+
+	UPROPERTY(EditAnywhere, Category = "GAS")
+	TArray<TSubclassOf<class UBaseAbility>> DefaultAbilities;
+	
 	UPROPERTY(EditAnywhere)
 	float Damage = 20.f;
 
@@ -89,7 +107,7 @@ protected:
 	UPROPERTY(Replicated, EditAnywhere)
 	bool bUseServerSideRewind = false;
 
-	UPROPERTY()
+	UPROPERTY(Replicated)
 	class AMannequinCharacter* WeaponOwnerCharacter;
 
 	UPROPERTY()

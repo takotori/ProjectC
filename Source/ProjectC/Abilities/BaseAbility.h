@@ -22,7 +22,7 @@ public:
 	UAbilitySystemComponent* GetAbilitySystemComponent() const;
 
 	UFUNCTION(BlueprintCallable)
-	void GetWeaponInstance() const;
+	AWeapon* GetWeaponInstance() const;
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, DisplayName = "Activate Server Ability")
 	void K2_ActivateServerAbility();

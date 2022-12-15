@@ -78,8 +78,7 @@ AMannequinCharacter::AMannequinCharacter()
 void AMannequinCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	SpawnDefaultWeapon();
-
+	
 	if (HasAuthority())
 	{
 		OnTakeAnyDamage.AddDynamic(this, &AMannequinCharacter::ReceiveDamage);
@@ -551,13 +550,12 @@ void AMannequinCharacter::SpawnDefaultWeapon()
 {
 	MatchGameMode = MatchGameMode == nullptr ? GetWorld()->GetAuthGameMode<AMatchGameMode>() : MatchGameMode;
 	UWorld* World = GetWorld();
-	if (MatchGameMode && World && !bElimmed && DefaultWeaponClass)
+	if (MatchGameMode && World && !bElimmed && DefaultWeaponClass && Combat)
 	{
 		AWeapon* StartingWeapon = World->SpawnActor<AWeapon>(DefaultWeaponClass);
-		if (Combat)
-		{
-			Combat->EquipWeapon(StartingWeapon);
-		}
+		StartingWeapon->SetOwningCharacter(this);
+		StartingWeapon->InitializeAttributes();
+		Combat->EquipWeapon(StartingWeapon);
 	}
 }
 
@@ -634,10 +632,10 @@ void AMannequinCharacter::GiveAbilities()
 {
 	if (HasAuthority() && AbilitySystemComponent)
 	{
+		SpawnDefaultWeapon();
 		for (auto& Ability : DefaultAbilities)
 		{
-			AbilitySystemComponent->GiveAbility(
-				FGameplayAbilitySpec(Ability, 1, static_cast<int32>(Ability.GetDefaultObject()->AbilityInputID), this));
+			AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(Ability, 1, static_cast<int32>(Ability.GetDefaultObject()->AbilityInputID), this));
 		}
 	}
 }

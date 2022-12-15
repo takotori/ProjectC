@@ -1,10 +1,13 @@
 #include "Weapon.h"
 
+#include "AbilitySystemComponent.h"
 #include "Casing.h"
+#include "GameplayAbilitySpec.h"
 #include "Components/SphereComponent.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Net/UnrealNetwork.h"
+#include "ProjectC/Abilities/BaseAbility.h"
 #include "ProjectC/Character/MannequinCharacter.h"
 #include "ProjectC/Components/CombatComponent.h"
 #include "ProjectC/PlayerController/MannequinPlayerController.h"
@@ -43,7 +46,65 @@ void AWeapon::BeginPlay()
 void AWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME_CONDITION(AWeapon, WeaponOwnerCharacter, COND_OwnerOnly);
 	DOREPLIFETIME_CONDITION(AWeapon, bUseServerSideRewind, COND_OwnerOnly)
+}
+
+void AWeapon::SetOwningCharacter(AMannequinCharacter* Character)
+{
+	WeaponOwnerCharacter = Character;
+	if (WeaponOwnerCharacter)
+	{
+		AbilitySystemComponent = Cast<UCardAbilitySystemComponent>(WeaponOwnerCharacter->GetAbilitySystemComponent());
+		SetOwner(Character);
+	}
+	else
+	{
+		AbilitySystemComponent = nullptr;
+		SetOwner(nullptr);
+	}
+}
+
+void AWeapon::AddAbilities()
+{
+	if (!IsValid(WeaponOwnerCharacter) || !WeaponOwnerCharacter->GetAbilitySystemComponent())
+	{
+		return;
+	}
+
+	UCardAbilitySystemComponent* ASC = Cast<UCardAbilitySystemComponent>(
+		WeaponOwnerCharacter->GetAbilitySystemComponent());
+
+	if (!ASC)
+	{
+		return;
+	}
+	// Grant abilities, but only on the server	
+	if (HasAuthority())
+	{
+		for (auto& Ability : DefaultAbilities)
+		{
+			ASC->GiveAbility(
+				FGameplayAbilitySpec(Ability, 1, static_cast<int32>(Ability.GetDefaultObject()->AbilityInputID), this));
+		}
+	}
+}
+
+void AWeapon::InitializeAttributes()
+{
+	if (AbilitySystemComponent && DefaultAttributeEffect)
+	{
+		FGameplayEffectContextHandle EffectContext = AbilitySystemComponent->MakeEffectContext();
+		EffectContext.AddSourceObject(this);
+
+		const FGameplayEffectSpecHandle SpecHandle = AbilitySystemComponent->MakeOutgoingSpec(
+			DefaultAttributeEffect, 1, EffectContext);
+		if (SpecHandle.IsValid())
+		{
+			FActiveGameplayEffectHandle GEHandle = AbilitySystemComponent->ApplyGameplayEffectSpecToSelf(
+				*SpecHandle.Data.Get());
+		}
+	}
 }
 
 void AWeapon::Fire(const FVector& HitTarget)
@@ -97,7 +158,9 @@ void AWeapon::ClientAddAmmo_Implementation(int32 AmmoToAdd)
 {
 	if (HasAuthority()) return;
 	Ammo = FMath::Clamp(Ammo + AmmoToAdd, 0, MagCapacity);
-	WeaponOwnerCharacter = WeaponOwnerCharacter == nullptr ? Cast<AMannequinCharacter>(GetOwner()) : WeaponOwnerCharacter;
+	WeaponOwnerCharacter = WeaponOwnerCharacter == nullptr
+		                       ? Cast<AMannequinCharacter>(GetOwner())
+		                       : WeaponOwnerCharacter;
 	if (WeaponOwnerCharacter && WeaponOwnerCharacter->GetCombat() && IsFull())
 	{
 		WeaponOwnerCharacter->GetCombat()->JumpToShotgunEnd();
@@ -167,7 +230,6 @@ FVector AWeapon::TraceEndWithScatter(const FVector& HitTarget)
 	return FVector(TraceStart + ToEndLoc * TRACE_LENGTH / ToEndLoc.Size());
 }
 
-
 void AWeapon::OnPingTooHigh(bool bPingTooHigh)
 {
 	bUseServerSideRewind = !bPingTooHigh;
@@ -183,10 +245,17 @@ void AWeapon::PollInit()
 {
 	if (WeaponOwnerController == nullptr && HasAuthority() && WeaponOwnerCharacter->Controller)
 	{
-		WeaponOwnerController = WeaponOwnerController == nullptr ? Cast<AMannequinPlayerController>(WeaponOwnerCharacter->Controller) : WeaponOwnerController;
+		WeaponOwnerController = WeaponOwnerController == nullptr
+			                        ? Cast<AMannequinPlayerController>(WeaponOwnerCharacter->Controller)
+			                        : WeaponOwnerController;
 		if (WeaponOwnerController && !WeaponOwnerController->HighPingDelegate.IsBound())
 		{
 			WeaponOwnerController->HighPingDelegate.AddDynamic(this, &AWeapon::OnPingTooHigh);
 		}
 	}
+}
+
+UAbilitySystemComponent* AWeapon::GetAbilitySystemComponent() const
+{
+	return AbilitySystemComponent;
 }

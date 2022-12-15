@@ -72,18 +72,11 @@ void UFireAbility::UseAbility(const FGameplayAbilityTargetDataHandle& TargetData
 			return;
 		}
 	}
-
+	
 	//////////////////////////////////////////////////////////////////////
 	// Client & Server both -- data is valid, activate the ability with it
 	//////////////////////////////////////////////////////////////////////
-
-	UE_LOG(LogTemp, Warning, TEXT("asdfklk"))
-
-	if (CurrentActorInfo->IsNetAuthority())
-	{
-		UE_LOG(LogTemp, Warning, TEXT("damn has authority"))
-	}
-
+	
 	// this is an instant ability, end it immediately (only replicate if bIsServer)
 	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, bIsServer, false);
 }
@@ -246,8 +239,6 @@ FVector UFireAbility::GetWeaponTargetingSourceLocation()
 
 	const FVector SourceLoc = AvatarPawn->GetActorLocation();
 	const FVector TargetingSourceLocation = SourceLoc;
-
-	//@TODO: Add an offset from the weapon instance and adjust based on pawn crouch/aiming/etc...
-
+	
 	return TargetingSourceLocation;
 }

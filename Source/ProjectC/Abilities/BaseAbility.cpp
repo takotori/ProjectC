@@ -1,6 +1,7 @@
 #include "BaseAbility.h"
 
 #include "AbilitySystemComponent.h"
+#include "ProjectC/Weapon/Weapon.h"
 
 AMannequinCharacter* UBaseAbility::GetCharacterFromActorInfo() const
 {
@@ -41,12 +42,13 @@ UAbilitySystemComponent* UBaseAbility::GetAbilitySystemComponent() const
 	return CurrentActorInfo ? Cast<UAbilitySystemComponent>(CurrentActorInfo->AbilitySystemComponent.Get()) : nullptr;
 }
 
-void UBaseAbility::GetWeaponInstance() const
+AWeapon* UBaseAbility::GetWeaponInstance() const
 {
-	if (FGameplayAbilitySpec* Spec = GetCurrentAbilitySpec())
+	if (const FGameplayAbilitySpec* Spec = GetCurrentAbilitySpec())
 	{
-		UObject* Object = Spec->SourceObject.Get();
+		return Cast<AWeapon>(Spec->SourceObject.Get());
 	}
+	return nullptr;
 }
 
 void UBaseAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,

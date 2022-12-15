@@ -219,6 +219,7 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 		AttachActorToRightHand(EquippedWeapon);
 		EquippedWeapon->SetOwner(Character);
 		EquippedWeapon->SetHUDAmmo();
+		EquippedWeapon->AddAbilities();
 	}
 }
 
