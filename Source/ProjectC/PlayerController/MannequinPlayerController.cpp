@@ -7,6 +7,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 #include "ProjectC/Character/MannequinCharacter.h"
+#include "ProjectC/Components/CardAbilitySystemComponent.h"
 #include "ProjectC/Components/CombatComponent.h"
 #include "ProjectC/GameMode/MatchGameMode.h"
 #include "ProjectC/GameState/MannequinGameState.h"
@@ -362,6 +363,22 @@ void AMannequinPlayerController::PollInit()
 		}
 	}
 }
+
+void AMannequinPlayerController::PostProcessInput(const float DeltaTime, const bool bGamePaused)
+{
+	if (UCardAbilitySystemComponent* Asc = GetAbilitySystemComponent())
+	{
+		Asc->ProcessAbilityInput(DeltaTime, bGamePaused);
+	}
+	Super::PostProcessInput(DeltaTime, bGamePaused);
+}
+
+UCardAbilitySystemComponent* AMannequinPlayerController::GetAbilitySystemComponent() const
+{
+	const AMannequinPlayerState* MannequinPlayerState = CastChecked<AMannequinPlayerState>(PlayerState, ECastCheckedType::NullAllowed);
+	return MannequinPlayerState ? MannequinPlayerState->GetAsc() : nullptr;
+}
+
 
 void AMannequinPlayerController::SetHUDTime()
 {

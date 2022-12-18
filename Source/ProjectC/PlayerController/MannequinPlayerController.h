@@ -13,12 +13,16 @@ class PROJECTC_API AMannequinPlayerController : public APlayerController
 	GENERATED_BODY()
 
 public:
+	UFUNCTION(BlueprintCallable, Category = "Lyra|PlayerController")
+	UCardAbilitySystemComponent* GetAbilitySystemComponent() const;
+
+
 	void SetHUDHealth(float Health, float MaxHealth);
 	void SetHUDShield(float Shield, float MaxShield);
 	void SetHUDScore(float Score);
 	void SetHUDRedTeamScore(int32 RedScore);
 	void SetHUDBlueTeamScore(int32 BlueScore);
-	
+
 	void SetHUDDefeats(int32 Defeats);
 	void SetHUDAmmo(int32 Ammo);
 	void SetHUDMatchCountdown(float CountdownTime);
@@ -29,7 +33,7 @@ public:
 	virtual void OnPossess(APawn* InPawn) override;
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-	
+
 	virtual float GetServerTime(); // Synced with server world clock
 	virtual void ReceivedPlayer() override; // Sync with server clock as soon as possible
 	void OnMatchStateSet(FName State, bool bTeamsMatch = false);
@@ -37,14 +41,16 @@ public:
 	float SingleTripTime = 0.f;
 
 	FHighPingDelegate HighPingDelegate;
-	
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
 	void CheckTimeSync(float DeltaSeconds);
 	void SetHUDTime();
 	void PollInit();
-	
+
+	virtual void PostProcessInput(const float DeltaTime, const bool bGamePaused) override;
+
 	// Sync time between client and server
 	// Request the current server time, passing in the clients time when the request was sent
 	UFUNCTION(Server, Reliable)
@@ -85,9 +91,9 @@ protected:
 	void OnRep_ShowTeamScores();
 
 	FString GetInfoText(const TArray<AMannequinPlayerState*>& Players);
-	
+
 	FString GetTeamsInfoText(const class AMannequinGameState* MannequinGameState);
-	
+
 private:
 	UPROPERTY()
 	class AMannequinHUD* MannequinHUD;
@@ -101,7 +107,7 @@ private:
 
 	bool bPauseMenuOpen = false;
 
-	float LevelStartingTime = 0.f; 
+	float LevelStartingTime = 0.f;
 	float MatchTime = 0.f;
 	float WarmupTime = 0.f;
 	uint32 CountdownInt = 0;
@@ -122,7 +128,7 @@ private:
 	bool bInitializeShield = false;
 	bool bInitializeAmmo = false;
 	bool bInitializeTeamScores = false;
-	
+
 	float HUDHealth;
 	float HUDMaxHealth;
 	float HUDShield;
@@ -148,3 +154,4 @@ private:
 	UPROPERTY(EditAnywhere)
 	float HighPingThreshhold = 50.f;
 };
+

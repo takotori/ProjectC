@@ -1,10 +1,13 @@
 #include "FireAbility.h"
 
 #include "AbilitySystemComponent.h"
+#include "Engine/SkeletalMeshSocket.h"
 #include "Kismet/GameplayStatics.h"
+#include "ProjectC/Abilities/BaseGameplayTags.h"
 #include "ProjectC/Abilities/FGameplayAbilityTargetData_STH.h"
 #include "ProjectC/Character/MannequinCharacter.h"
 #include "ProjectC/Components/CombatComponent.h"
+#include "ProjectC/Weapon/Weapon.h"
 
 UFireAbility::UFireAbility()
 {
@@ -51,7 +54,7 @@ void UFireAbility::UseAbility(const FGameplayAbilityTargetDataHandle& TargetData
 {
 	// retrieve data
 	const FGameplayAbilityTargetData* TargetData = TargetDataHandle.Get(0);
-	
+
 	if (!TargetData)
 	{
 		// client sent us bad data
@@ -72,13 +75,37 @@ void UFireAbility::UseAbility(const FGameplayAbilityTargetDataHandle& TargetData
 			return;
 		}
 	}
-	
+
+	SpawnProjectile(HitResult);
 	//////////////////////////////////////////////////////////////////////
 	// Client & Server both -- data is valid, activate the ability with it
 	//////////////////////////////////////////////////////////////////////
-	
+
 	// this is an instant ability, end it immediately (only replicate if bIsServer)
 	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, bIsServer, false);
+}
+
+void UFireAbility::SpawnProjectile(const FHitResult* HitResult)
+{
+	const USkeletalMeshComponent* SkeletalMeshComponent = GetWeaponInstance()->GetWeaponMesh();
+	if (!SkeletalMeshComponent) return;
+	
+	const USkeletalMeshSocket* MuzzleFlashSocket = SkeletalMeshComponent->GetSocketByName(FName("MuzzleFlash"));
+	const UWorld* World = GetWorld();
+	if (MuzzleFlashSocket && World)
+	{
+		const FTransform SocketTransform = MuzzleFlashSocket->GetSocketTransform(SkeletalMeshComponent);
+		const FVector ToTarget = HitResult->ImpactPoint - SocketTransform.GetLocation();
+		const FRotator TargetRotation = ToTarget.Rotation();
+		
+		APawn* InstigatorPawn = Cast<APawn>(CurrentActorInfo->OwnerActor->GetOwner());
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.Owner = CurrentActorInfo->OwnerActor->GetOwner();
+		SpawnParams.Instigator = InstigatorPawn;
+
+		// AProjectile* SpawnedProjectile;
+		
+	}
 }
 
 void UFireAbility::PerformLocalTargeting(TArray<FHitResult>& OutHits)
@@ -202,12 +229,7 @@ FHitResult UFireAbility::WeaponTrace(const FVector& StartTrace, const FVector& E
 
 	if (const UWorld* World = GetWorld())
 	{
-		World->LineTraceSingleByChannel(
-			HitResult,
-			StartTrace,
-			EndTrace,
-			ECC_Visibility,
-			TraceParams);
+		World->LineTraceSingleByChannel(HitResult, StartTrace, EndTrace, ECC_Visibility, TraceParams);
 	}
 
 	DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor::Red, false, 3.f, 0, 3.f);
@@ -239,6 +261,6 @@ FVector UFireAbility::GetWeaponTargetingSourceLocation()
 
 	const FVector SourceLoc = AvatarPawn->GetActorLocation();
 	const FVector TargetingSourceLocation = SourceLoc;
-	
+
 	return TargetingSourceLocation;
 }

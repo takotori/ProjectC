@@ -82,11 +82,7 @@ void AWeapon::AddAbilities()
 	// Grant abilities, but only on the server	
 	if (HasAuthority())
 	{
-		for (auto& Ability : DefaultAbilities)
-		{
-			ASC->GiveAbility(
-				FGameplayAbilitySpec(Ability, 1, static_cast<int32>(Ability.GetDefaultObject()->AbilityInputID), this));
-		}
+		BaseAbilitySet->GiveToAbilitySystem(ASC, this);
 	}
 }
 

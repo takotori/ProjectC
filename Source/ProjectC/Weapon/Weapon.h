@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
 #include "GameFramework/Actor.h"
+#include "ProjectC/Abilities/BaseAbilitySet.h"
 #include "ProjectC/Character/MannequinCharacter.h"
 #include "ProjectC/Components/CardAbilitySystemComponent.h"
 #include "ProjectC/Types/WeaponTypes.h"
@@ -89,7 +90,10 @@ protected:
 	UCardAbilitySystemComponent* AbilitySystemComponent;
 
 	UPROPERTY(EditAnywhere, Category = "GAS")
-	TArray<TSubclassOf<class UBaseAbility>> DefaultAbilities;
+	TArray<TSubclassOf<UBaseAbility>> DefaultAbilities;
+
+	UPROPERTY(EditAnywhere, Category = "GAS")
+	UBaseAbilitySet* BaseAbilitySet;
 	
 	UPROPERTY(EditAnywhere)
 	float Damage = 20.f;

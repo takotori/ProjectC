@@ -3,6 +3,10 @@
 #include "AbilitySystemComponent.h"
 #include "ProjectC/Weapon/Weapon.h"
 
+UBaseAbility::UBaseAbility()
+{
+}
+
 AMannequinCharacter* UBaseAbility::GetCharacterFromActorInfo() const
 {
 	return CurrentActorInfo ? Cast<AMannequinCharacter>(CurrentActorInfo->AvatarActor.Get()) : nullptr;

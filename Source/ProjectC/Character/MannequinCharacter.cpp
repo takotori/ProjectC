@@ -8,6 +8,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/WidgetComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Input/CharacterInputComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Net/UnrealNetwork.h"
@@ -78,7 +79,7 @@ AMannequinCharacter::AMannequinCharacter()
 void AMannequinCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 	if (HasAuthority())
 	{
 		OnTakeAnyDamage.AddDynamic(this, &AMannequinCharacter::ReceiveDamage);
@@ -131,22 +132,43 @@ void AMannequinCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 	if (UEnhancedInputComponent* InComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent))
-	{
+	{		
+		TArray<uint32> BindHandles;
+
+		for (const FCharacterInputAction& Action : InputConfig->AbilityInputActions)
+		{
+			if (Action.InputAction && Action.InputTag.IsValid())
+			{
+				if (&AMannequinCharacter::AbilityInputTagPressed)
+				{
+					BindHandles.Add(InComponent->BindAction(Action.InputAction, ETriggerEvent::Triggered, this, &AMannequinCharacter::AbilityInputTagPressed, Action.InputTag).GetHandle());
+				}
+
+				if (&AMannequinCharacter::AbilityInputTagReleased)
+				{
+					BindHandles.Add(InComponent->BindAction(Action.InputAction, ETriggerEvent::Completed, this, &AMannequinCharacter::AbilityInputTagReleased, Action.InputTag).GetHandle());
+				}
+			}
+		}
 		
 		InComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AMannequinCharacter::Move);
 		InComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AMannequinCharacter::Look);
-		
-		InComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &AMannequinCharacter::HandleJumpActionTriggered);
-		InComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &AMannequinCharacter::HandleJumpActionTriggered);
-		InComponent->BindAction(CrouchAction, ETriggerEvent::Started, this, &AMannequinCharacter::HandleCrouchActionTriggered);
-		
-		// InComponent->BindAction(FireAction, ETriggerEvent::Triggered, this, &AMannequinCharacter::Fire);
-		// InComponent->BindAction(FireAction, ETriggerEvent::Completed, this, &AMannequinCharacter::FireButtonReleased);
-		InComponent->BindAction(FireAction, ETriggerEvent::Triggered, this, &AMannequinCharacter::HandleFireActionTriggered);
-		InComponent->BindAction(FireAction, ETriggerEvent::Completed, this, &AMannequinCharacter::HandleFireActionCompleted);
-		
-		InComponent->BindAction(ReloadAction, ETriggerEvent::Triggered, this, &AMannequinCharacter::Reload);
-		InComponent->BindAction(ThrowGrenadeAction, ETriggerEvent::Triggered, this, &AMannequinCharacter::ThrowGrenade);
+	}
+}
+
+void AMannequinCharacter::AbilityInputTagPressed(FGameplayTag InputTag)
+{
+	if (AbilitySystemComponent)
+	{
+		AbilitySystemComponent->AbilityInputTagPressed(InputTag);
+	}
+}
+
+void AMannequinCharacter::AbilityInputTagReleased(FGameplayTag InputTag)
+{
+	if (AbilitySystemComponent)
+	{
+		AbilitySystemComponent->AbilityInputTagReleased(InputTag);
 	}
 }
 
@@ -382,7 +404,8 @@ void AMannequinCharacter::SendAbilityLocalInput(const FInputActionValue& Value, 
 	if (AbilitySystemComponent && Value.Get<bool>())
 	{
 		AbilitySystemComponent->AbilityLocalInputPressed(static_cast<int32>(InputId));
-	} else
+	}
+	else
 	{
 		AbilitySystemComponent->AbilityLocalInputReleased(static_cast<int32>(InputId));
 	}
@@ -633,10 +656,7 @@ void AMannequinCharacter::GiveAbilities()
 	if (HasAuthority() && AbilitySystemComponent)
 	{
 		SpawnDefaultWeapon();
-		for (auto& Ability : DefaultAbilities)
-		{
-			AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(Ability, 1, static_cast<int32>(Ability.GetDefaultObject()->AbilityInputID), this));
-		}
+		BaseAbilitySet->GiveToAbilitySystem(AbilitySystemComponent, this);
 	}
 }
 

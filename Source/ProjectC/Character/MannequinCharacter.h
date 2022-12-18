@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
+#include "GameplayTagContainer.h"
 #include "InputActionValue.h"
 #include "Components/TimelineComponent.h"
 #include "GameFramework/Character.h"
@@ -22,6 +23,8 @@ public:
 	AMannequinCharacter();
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
+	void AbilityInputTagPressed(FGameplayTag InputTag);
+	void AbilityInputTagReleased(FGameplayTag InputTag);
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void PostInitializeComponents() override;
 	void CreateBoxComponents();
@@ -48,6 +51,9 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "GAS")
 	TArray<TSubclassOf<class UBaseAbility>> DefaultAbilities;
+
+	UPROPERTY(EditAnywhere, Category = "GAS")
+	class UBaseAbilitySet* BaseAbilitySet;
 
 	void UpdateHUDHealth();
 	void UpdateHUDShield();
@@ -81,6 +87,9 @@ protected:
 	void Reload();
 	void PlayHitReactMontage();
 	void ThrowGrenade();
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
+	TObjectPtr<class UCharacterInputConfig> InputConfig;
 
 	UPROPERTY(EditAnywhere, Category = "Input")
 	class UInputMappingContext* BaseMappingContext;

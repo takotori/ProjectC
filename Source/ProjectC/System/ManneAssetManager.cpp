@@ -2,6 +2,7 @@
 #include "ManneAssetManager.h"
 
 #include "AbilitySystemGlobals.h"
+#include "ProjectC/Abilities/BaseGameplayTags.h"
 
 UManneAssetManager::UManneAssetManager()
 {
@@ -10,7 +11,8 @@ UManneAssetManager::UManneAssetManager()
 void UManneAssetManager::StartInitialLoading()
 {
 	Super::StartInitialLoading();
-
+	
+	FBaseGameplayTags::InitializeNativeTags();
 	UAbilitySystemGlobals::Get().InitGlobalData();
 }
 
