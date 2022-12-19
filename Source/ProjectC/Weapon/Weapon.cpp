@@ -9,6 +9,7 @@
 #include "Net/UnrealNetwork.h"
 #include "ProjectC/Abilities/BaseAbility.h"
 #include "ProjectC/Character/MannequinCharacter.h"
+#include "ProjectC/Components/CardAbilitySystemComponent.h"
 #include "ProjectC/Components/CombatComponent.h"
 #include "ProjectC/PlayerController/MannequinPlayerController.h"
 
@@ -82,7 +83,7 @@ void AWeapon::AddAbilities()
 	// Grant abilities, but only on the server	
 	if (HasAuthority())
 	{
-		BaseAbilitySet->GiveToAbilitySystem(ASC, this);
+		DefaultAbilities->GiveToAbilitySystem(ASC, this);
 	}
 }
 

@@ -48,12 +48,10 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "GAS")
 	TSubclassOf<class UGameplayEffect> DefaultAttributeEffect;
-
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "GAS")
-	TArray<TSubclassOf<class UBaseAbility>> DefaultAbilities;
-
+	
+	// remove default abilities here and on weapon, input actions, 
 	UPROPERTY(EditAnywhere, Category = "GAS")
-	class UBaseAbilitySet* BaseAbilitySet;
+	class UBaseAbilitySet* DefaultAbilities;
 
 	void UpdateHUDHealth();
 	void UpdateHUDShield();
@@ -81,7 +79,6 @@ protected:
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	
-	void CrouchPlayer();
 	void AimOffset(float DeltaTime);
 	
 	void Reload();
@@ -99,35 +96,10 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* LookAction;
-
-	UPROPERTY(EditAnywhere, Category = "Input")
-	UInputAction* JumpAction;
-
-	UPROPERTY(EditAnywhere, Category = "Input")
-	UInputAction* CrouchAction;
-
-	UPROPERTY(EditAnywhere, Category = "Input")
-	UInputAction* FireAction;
-
-	UPROPERTY(EditAnywhere, Category = "Input")
-	UInputAction* ReloadAction;
-
-	UPROPERTY(EditAnywhere, Category = "Input")
-	UInputAction* ThrowGrenadeAction;
-
+	
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* QuitAction;
-
-	void HandleJumpActionTriggered(const FInputActionValue& Value);
-	void HandleCrouchActionTriggered(const FInputActionValue& Value);
-	void HandleFireActionTriggered(const FInputActionValue& Value);
-	void HandleFireActionCompleted(const FInputActionValue& Value);
-	void HandleReloadActionTriggered(const FInputActionValue& Value);
-	void HandleThrowGrenadeActionTriggered(const FInputActionValue& Value);
-
-	void SendAbilityLocalInput(const FInputActionValue& Value, EGSAbilityInputID InputId);
 	
-
 	UFUNCTION()
 	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
 	                   AController* InstigatorController, AActor* DamageCauser);

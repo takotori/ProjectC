@@ -5,7 +5,6 @@
 #include "GameFramework/Actor.h"
 #include "ProjectC/Abilities/BaseAbilitySet.h"
 #include "ProjectC/Character/MannequinCharacter.h"
-#include "ProjectC/Components/CardAbilitySystemComponent.h"
 #include "ProjectC/Types/WeaponTypes.h"
 #include "Weapon.generated.h"
 
@@ -90,10 +89,7 @@ protected:
 	UCardAbilitySystemComponent* AbilitySystemComponent;
 
 	UPROPERTY(EditAnywhere, Category = "GAS")
-	TArray<TSubclassOf<UBaseAbility>> DefaultAbilities;
-
-	UPROPERTY(EditAnywhere, Category = "GAS")
-	UBaseAbilitySet* BaseAbilitySet;
+	UBaseAbilitySet* DefaultAbilities;
 	
 	UPROPERTY(EditAnywhere)
 	float Damage = 20.f;
@@ -112,10 +108,10 @@ protected:
 	bool bUseServerSideRewind = false;
 
 	UPROPERTY(Replicated)
-	class AMannequinCharacter* WeaponOwnerCharacter;
+	AMannequinCharacter* WeaponOwnerCharacter;
 
 	UPROPERTY()
-	class AMannequinPlayerController* WeaponOwnerController;
+	AMannequinPlayerController* WeaponOwnerController;
 
 	UFUNCTION()
 	void OnPingTooHigh(bool bPingTooHigh);

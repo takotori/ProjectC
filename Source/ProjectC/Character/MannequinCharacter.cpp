@@ -369,48 +369,6 @@ void AMannequinCharacter::ThrowGrenade()
 	}
 }
 
-void AMannequinCharacter::HandleJumpActionTriggered(const FInputActionValue& Value)
-{
-	SendAbilityLocalInput(Value, EGSAbilityInputID::Jump);
-}
-
-void AMannequinCharacter::HandleCrouchActionTriggered(const FInputActionValue& Value)
-{
-	SendAbilityLocalInput(Value, EGSAbilityInputID::Crouch);
-}
-
-void AMannequinCharacter::HandleFireActionTriggered(const FInputActionValue& Value)
-{
-	SendAbilityLocalInput(Value, EGSAbilityInputID::Fire);
-}
-
-void AMannequinCharacter::HandleFireActionCompleted(const FInputActionValue& Value)
-{
-	SendAbilityLocalInput(Value, EGSAbilityInputID::Fire);
-}
-
-void AMannequinCharacter::HandleReloadActionTriggered(const FInputActionValue& Value)
-{
-	SendAbilityLocalInput(Value, EGSAbilityInputID::Reload);
-}
-
-void AMannequinCharacter::HandleThrowGrenadeActionTriggered(const FInputActionValue& Value)
-{
-	SendAbilityLocalInput(Value, EGSAbilityInputID::ThrowGrenade);
-}
-
-void AMannequinCharacter::SendAbilityLocalInput(const FInputActionValue& Value, EGSAbilityInputID InputId)
-{
-	if (AbilitySystemComponent && Value.Get<bool>())
-	{
-		AbilitySystemComponent->AbilityLocalInputPressed(static_cast<int32>(InputId));
-	}
-	else
-	{
-		AbilitySystemComponent->AbilityLocalInputReleased(static_cast<int32>(InputId));
-	}
-}
-
 void AMannequinCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
                                         AController* InstigatorController, AActor* DamageCauser)
 {
@@ -449,12 +407,6 @@ void AMannequinCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, cons
 			MatchGameMode->PlayerEliminated(this, MannequinPlayerController, AttackerController);
 		}
 	}
-}
-
-void AMannequinCharacter::CrouchPlayer()
-{
-	if (bDisableGameplay) return;
-	bIsCrouched ? UnCrouch() : Crouch();
 }
 
 void AMannequinCharacter::AimOffset(float DeltaTime)
@@ -656,7 +608,7 @@ void AMannequinCharacter::GiveAbilities()
 	if (HasAuthority() && AbilitySystemComponent)
 	{
 		SpawnDefaultWeapon();
-		BaseAbilitySet->GiveToAbilitySystem(AbilitySystemComponent, this);
+		DefaultAbilities->GiveToAbilitySystem(AbilitySystemComponent, this);
 	}
 }
 
