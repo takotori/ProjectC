@@ -28,6 +28,10 @@ public:
 	FGameplayAttributeData RoundsPerMinute;
 	ATTRIBUTE_ACCESSORS(UWeaponAttributes, RoundsPerMinute)
 
+	UPROPERTY(BlueprintReadOnly, Category = "Attributes", ReplicatedUsing = OnRep_Ammo)
+	FGameplayAttributeData Ammo;
+	ATTRIBUTE_ACCESSORS(UWeaponAttributes, Ammo)
+
 	UPROPERTY(BlueprintReadOnly, Category = "Attributes", ReplicatedUsing = OnRep_Magazine)
 	FGameplayAttributeData Magazine;
 	ATTRIBUTE_ACCESSORS(UWeaponAttributes, Magazine)
@@ -54,6 +58,9 @@ public:
 	UFUNCTION()
 	virtual void OnRep_RoundPerMinute(const FGameplayAttributeData& OldRoundsPerMinute);
 
+	UFUNCTION()
+	virtual void OnRep_Ammo(const FGameplayAttributeData& OldAmmo);
+	
 	UFUNCTION()
 	virtual void OnRep_Magazine(const FGameplayAttributeData& OldMagazine);
 

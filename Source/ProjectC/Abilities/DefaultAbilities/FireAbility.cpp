@@ -5,8 +5,10 @@
 #include "Kismet/GameplayStatics.h"
 #include "ProjectC/Abilities/BaseGameplayTags.h"
 #include "ProjectC/Abilities/FGameplayAbilityTargetData_STH.h"
+#include "ProjectC/Abilities/AttributeSets/WeaponAttributes.h"
 #include "ProjectC/Character/MannequinCharacter.h"
 #include "ProjectC/Components/CombatComponent.h"
+#include "ProjectC/Weapon/Projectile.h"
 #include "ProjectC/Weapon/Weapon.h"
 
 UFireAbility::UFireAbility()
@@ -69,11 +71,11 @@ void UFireAbility::UseAbility(const FGameplayAbilityTargetDataHandle& TargetData
 	const bool bIsServer = CurrentActorInfo->IsNetAuthority();
 	if (bIsServer)
 	{
-		if (!HitResult->bBlockingHit) // if it wasnt a blocking hit
-		{
-			CancelAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true);
-			return;
-		}
+		// if (!HitResult->bBlockingHit) // if it wasnt a blocking hit
+		// {
+		// 	CancelAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true);
+		// 	return;
+		// }
 	}
 
 	SpawnProjectile(HitResult);
@@ -82,29 +84,40 @@ void UFireAbility::UseAbility(const FGameplayAbilityTargetDataHandle& TargetData
 	//////////////////////////////////////////////////////////////////////
 
 	// this is an instant ability, end it immediately (only replicate if bIsServer)
-	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, bIsServer, false);
+	// EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, bIsServer, false);
 }
 
 void UFireAbility::SpawnProjectile(const FHitResult* HitResult)
 {
 	const USkeletalMeshComponent* SkeletalMeshComponent = GetWeaponInstance()->GetWeaponMesh();
 	if (!SkeletalMeshComponent) return;
-	
+
+	// float Damage = Cast<UWeaponAttributes>(GetWeaponInstance()->DefaultAttributeEffect)->GetDamage();
+
 	const USkeletalMeshSocket* MuzzleFlashSocket = SkeletalMeshComponent->GetSocketByName(FName("MuzzleFlash"));
-	const UWorld* World = GetWorld();
+	UWorld* World = GetWorld();
 	if (MuzzleFlashSocket && World)
 	{
 		const FTransform SocketTransform = MuzzleFlashSocket->GetSocketTransform(SkeletalMeshComponent);
-		const FVector ToTarget = HitResult->ImpactPoint - SocketTransform.GetLocation();
+		const FVector ToTarget = HitResult->Location - SocketTransform.GetLocation();
 		const FRotator TargetRotation = ToTarget.Rotation();
 		
-		APawn* InstigatorPawn = Cast<APawn>(CurrentActorInfo->OwnerActor->GetOwner());
+		APawn* InstigatorPawn = Cast<APawn>(CurrentActorInfo->OwnerActor);
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.Owner = CurrentActorInfo->OwnerActor->GetOwner();
 		SpawnParams.Instigator = InstigatorPawn;
-
-		// AProjectile* SpawnedProjectile;
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 		
+		DrawDebugLine(GetWorld(), SocketTransform.GetLocation(), HitResult->ImpactPoint, FColor::Red, false, 3.f, 0, 3.f);
+		// DrawDebugLine(GetWorld(), HitResult->TraceStart, HitResult->TraceEnd, FColor::Blue, false, 3.f, 0, 3.f);
+		// DrawDebugLine(GetWorld(), HitResult, ToTarget, FColor::Red, false, 3.f, 0, 3.f);
+		
+		AProjectile* SpawnedProjectile = World->SpawnActor<AProjectile>(
+			ProjectileClass,
+			SocketTransform.GetLocation(),
+			TargetRotation,
+			SpawnParams
+		);
 	}
 }
 
@@ -149,7 +162,7 @@ FTransform UFireAbility::GetTargetingTransform(const APawn* SourcePawn)
 
 		// Determine initial focal point to 
 		const FVector AimDir = CamRot.Vector().GetSafeNormal();
-		FVector FocalLoc = CamLoc + (AimDir * FocalDistance);
+		FVector FocalLoc = CamLoc + AimDir * FocalDistance;
 
 		// Move the start and focal point up in front of pawn
 		if (PC)
@@ -232,7 +245,7 @@ FHitResult UFireAbility::WeaponTrace(const FVector& StartTrace, const FVector& E
 		World->LineTraceSingleByChannel(HitResult, StartTrace, EndTrace, ECC_Visibility, TraceParams);
 	}
 
-	DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor::Red, false, 3.f, 0, 3.f);
+	// DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor::Red, false, 3.f, 0, 3.f);
 
 	if (HitResult.bBlockingHit)
 	{

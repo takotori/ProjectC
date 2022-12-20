@@ -8,6 +8,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Net/UnrealNetwork.h"
 #include "ProjectC/Abilities/BaseAbility.h"
+#include "ProjectC/Abilities/AttributeSets/WeaponAttributes.h"
 #include "ProjectC/Character/MannequinCharacter.h"
 #include "ProjectC/Components/CardAbilitySystemComponent.h"
 #include "ProjectC/Components/CombatComponent.h"
@@ -72,7 +73,7 @@ void AWeapon::AddAbilities()
 	{
 		return;
 	}
-
+	
 	UCardAbilitySystemComponent* ASC = Cast<UCardAbilitySystemComponent>(
 		WeaponOwnerCharacter->GetAbilitySystemComponent());
 

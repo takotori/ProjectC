@@ -11,6 +11,7 @@ void UWeaponAttributes::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME_CONDITION_NOTIFY(UWeaponAttributes, Damage, COND_None, REPNOTIFY_Always)
 	DOREPLIFETIME_CONDITION_NOTIFY(UWeaponAttributes, RoundsPerMinute, COND_None, REPNOTIFY_Always)
+	DOREPLIFETIME_CONDITION_NOTIFY(UWeaponAttributes, Ammo, COND_None, REPNOTIFY_Always)
 	DOREPLIFETIME_CONDITION_NOTIFY(UWeaponAttributes, Magazine, COND_None, REPNOTIFY_Always)
 	DOREPLIFETIME_CONDITION_NOTIFY(UWeaponAttributes, BulletSpeed, COND_None, REPNOTIFY_Always)
 	DOREPLIFETIME_CONDITION_NOTIFY(UWeaponAttributes, Spread, COND_None, REPNOTIFY_Always)
@@ -26,6 +27,11 @@ void UWeaponAttributes::OnRep_Damage(const FGameplayAttributeData& OldDamage)
 void UWeaponAttributes::OnRep_RoundPerMinute(const FGameplayAttributeData& OldRoundsPerMinute)
 {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(UWeaponAttributes, RoundsPerMinute, OldRoundsPerMinute)
+}
+
+void UWeaponAttributes::OnRep_Ammo(const FGameplayAttributeData& OldAmmo)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UWeaponAttributes, Ammo, OldAmmo)
 }
 
 void UWeaponAttributes::OnRep_Magazine(const FGameplayAttributeData& OldMagazine)
