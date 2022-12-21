@@ -132,7 +132,7 @@ void AMannequinCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 	if (UEnhancedInputComponent* InComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent))
-	{		
+	{
 		TArray<uint32> BindHandles;
 
 		for (const FCharacterInputAction& Action : InputConfig->AbilityInputActions)
@@ -141,16 +141,20 @@ void AMannequinCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 			{
 				if (&AMannequinCharacter::AbilityInputTagPressed)
 				{
-					BindHandles.Add(InComponent->BindAction(Action.InputAction, ETriggerEvent::Triggered, this, &AMannequinCharacter::AbilityInputTagPressed, Action.InputTag).GetHandle());
+					BindHandles.Add(InComponent->BindAction(Action.InputAction, ETriggerEvent::Triggered, this,
+					                                        &AMannequinCharacter::AbilityInputTagPressed,
+					                                        Action.InputTag).GetHandle());
 				}
 
 				if (&AMannequinCharacter::AbilityInputTagReleased)
 				{
-					BindHandles.Add(InComponent->BindAction(Action.InputAction, ETriggerEvent::Completed, this, &AMannequinCharacter::AbilityInputTagReleased, Action.InputTag).GetHandle());
+					BindHandles.Add(InComponent->BindAction(Action.InputAction, ETriggerEvent::Completed, this,
+					                                        &AMannequinCharacter::AbilityInputTagReleased,
+					                                        Action.InputTag).GetHandle());
 				}
 			}
 		}
-		
+
 		InComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AMannequinCharacter::Move);
 		InComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AMannequinCharacter::Look);
 	}

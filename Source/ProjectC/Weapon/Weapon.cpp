@@ -73,7 +73,7 @@ void AWeapon::AddAbilities()
 	{
 		return;
 	}
-	
+
 	UCardAbilitySystemComponent* ASC = Cast<UCardAbilitySystemComponent>(
 		WeaponOwnerCharacter->GetAbilitySystemComponent());
 

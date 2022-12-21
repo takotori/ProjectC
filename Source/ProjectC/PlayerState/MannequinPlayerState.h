@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
 #include "GameFramework/PlayerState.h"
+#include "ProjectC/Abilities/AsyncTaskAttributeChanged.h"
 #include "ProjectC/Types/Team.h"
 #include "MannequinPlayerState.generated.h"
 
@@ -23,10 +24,19 @@ public:
 	void AddToScore(float ScoreAmount);
 	void AddToDefeats(int32 DefeatsAmount);
 
+	UPROPERTY()
+	const UCharacterAttributes* CharacterAttributeSet;
+
+	UPROPERTY()
+	const class UWeaponAttributes* WeaponAttributeSet;
+
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
 protected:
 	virtual void BeginPlay() override;
+	
+	FDelegateHandle AmmoChangedDelegateHandle;
+	virtual void AmmoChanged(const FOnAttributeChangeData& Data);
 
 private:
 	UPROPERTY()
@@ -37,9 +47,6 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess = "true"))
 	class UCardAbilitySystemComponent* AbilitySystemComponent;
-	
-	UPROPERTY()
-	const class UCharacterAttributes* AttributeSet;
 
 	UPROPERTY(ReplicatedUsing = OnRep_Defeats)
 	int32 Defeats;

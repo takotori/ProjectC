@@ -6,6 +6,7 @@
 #include "ProjectC/PlayerController/MannequinPlayerController.h"
 #include "Net/UnrealNetwork.h"
 #include "ProjectC/Abilities/AttributeSets/CharacterAttributes.h"
+#include "ProjectC/Abilities/AttributeSets/WeaponAttributes.h"
 #include "ProjectC/Components/CardAbilitySystemComponent.h"
 
 AMannequinPlayerState::AMannequinPlayerState()
@@ -14,7 +15,8 @@ AMannequinPlayerState::AMannequinPlayerState()
 	AbilitySystemComponent->SetIsReplicated(true);
 	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
 
-	AttributeSet = CreateDefaultSubobject<UCharacterAttributes>(TEXT("Attributes"));
+	CharacterAttributeSet = CreateDefaultSubobject<UCharacterAttributes>(TEXT("CharacterAttributes"));
+	WeaponAttributeSet = CreateDefaultSubobject<UWeaponAttributes>(TEXT("WeaponAttributes"));
 
 	NetUpdateFrequency = 66.f;
 }
@@ -22,7 +24,20 @@ AMannequinPlayerState::AMannequinPlayerState()
 void AMannequinPlayerState::BeginPlay()
 {
 	Super::BeginPlay();
-	if (AbilitySystemComponent) AttributeSet = AbilitySystemComponent->GetSet<UCharacterAttributes>();
+
+	if (AbilitySystemComponent)
+	{
+		CharacterAttributeSet = AbilitySystemComponent->GetSet<UCharacterAttributes>();
+		WeaponAttributeSet = AbilitySystemComponent->GetSet<UWeaponAttributes>();
+		// AmmoChangedDelegateHandle = AbilitySystemComponent->
+		//                             GetGameplayAttributeValueChangeDelegate(AttributeSet->GetHealthAttribute()).
+		//                             AddUObject(this, &AMannequinPlayerState::AmmoChanged);
+	}
+}
+
+void AMannequinPlayerState::AmmoChanged(const FOnAttributeChangeData& Data)
+{
+	UE_LOG(LogTemp, Warning, TEXT("asdlfjk"))
 }
 
 void AMannequinPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

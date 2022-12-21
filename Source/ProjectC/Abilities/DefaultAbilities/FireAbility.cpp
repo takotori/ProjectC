@@ -5,7 +5,6 @@
 #include "Kismet/GameplayStatics.h"
 #include "ProjectC/Abilities/BaseGameplayTags.h"
 #include "ProjectC/Abilities/FGameplayAbilityTargetData_STH.h"
-#include "ProjectC/Abilities/AttributeSets/WeaponAttributes.h"
 #include "ProjectC/Character/MannequinCharacter.h"
 #include "ProjectC/Components/CombatComponent.h"
 #include "ProjectC/Weapon/Projectile.h"

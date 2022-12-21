@@ -6,6 +6,7 @@
 #include "GameFramework/GameMode.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
+#include "ProjectC/Abilities/BaseGameplayTags.h"
 #include "ProjectC/Character/MannequinCharacter.h"
 #include "ProjectC/Components/CardAbilitySystemComponent.h"
 #include "ProjectC/Components/CombatComponent.h"
@@ -364,6 +365,65 @@ void AMannequinPlayerController::PollInit()
 	}
 }
 
+void AMannequinPlayerController::UpdateHUD(FGameplayAttribute Attribute,float OldValue, float NewValue)
+{
+	if (Attribute.IsValid())
+	{
+			
+	}
+	UE_LOG(LogTemp, Warning, TEXT("asdöfj"))
+}
+
+void AMannequinPlayerController::HealthChanged(float OldHealth, float NewHealth)
+{
+	MannequinHUD = MannequinHUD == nullptr ? Cast<AMannequinHUD>(GetHUD()) : MannequinHUD;
+	AMannequinPlayerState* MannequinPlayerState = GetPlayerState<AMannequinPlayerState>();
+	if (MannequinHUD && MannequinHUD->CharacterOverlay && MannequinHUD->CharacterOverlay->HealthBar && MannequinHUD->
+		CharacterOverlay->HealthText && MannequinPlayerState && MannequinPlayerState->CharacterAttributeSet)
+	{
+		const float HealthPercent = NewHealth / MannequinPlayerState->CharacterAttributeSet->GetMaxHealth();
+		MannequinHUD->CharacterOverlay->HealthBar->SetPercent(HealthPercent);
+		const FString HealthText =FString::Printf(TEXT("%d/%d"), FMath::CeilToInt(NewHealth), FMath::CeilToInt(MannequinPlayerState->CharacterAttributeSet->GetMaxHealth()));
+		MannequinHUD->CharacterOverlay->HealthText->SetText(FText::FromString(HealthText));
+	}
+}
+
+void AMannequinPlayerController::MaxHealthChanged(float OldMaxHealth, float NewMaxHealth)
+{
+}
+
+void AMannequinPlayerController::ShieldChanged(float OldShield, float NewShield)
+{
+	MannequinHUD = MannequinHUD == nullptr ? Cast<AMannequinHUD>(GetHUD()) : MannequinHUD;
+	AMannequinPlayerState* MannequinPlayerState = GetPlayerState<AMannequinPlayerState>();
+	if (MannequinHUD && MannequinHUD->CharacterOverlay && MannequinHUD->CharacterOverlay->HealthBar && MannequinHUD->
+		CharacterOverlay->HealthText && MannequinPlayerState && MannequinPlayerState->CharacterAttributeSet)
+	{
+		const float ShieldPercent = NewShield / MannequinPlayerState->CharacterAttributeSet->GetMaxShield();
+		MannequinHUD->CharacterOverlay->HealthBar->SetPercent(ShieldPercent);
+		const FString ShieldText =FString::Printf(TEXT("%d/%d"), FMath::CeilToInt(NewShield), FMath::CeilToInt(MannequinPlayerState->CharacterAttributeSet->GetMaxShield()));
+		MannequinHUD->CharacterOverlay->HealthText->SetText(FText::FromString(ShieldText));
+	}
+}
+
+void AMannequinPlayerController::MaxShieldChanged(float OldMaxShield, float NewMaxShield)
+{
+}
+
+void AMannequinPlayerController::AmmoChanged(int32 OldAmmo, int32 NewAmmo)
+{
+	MannequinHUD = MannequinHUD == nullptr ? Cast<AMannequinHUD>(GetHUD()) : MannequinHUD;
+	if (MannequinHUD && MannequinHUD->CharacterOverlay)
+	{
+		const FString AmmoText = FString::Printf(TEXT("%d"), NewAmmo);
+		MannequinHUD->CharacterOverlay->AmmoAmount->SetText(FText::FromString(AmmoText));
+	}
+}
+
+void AMannequinPlayerController::MagazineChanged(float OldMagazine, float NewMagazine)
+{
+}
+
 void AMannequinPlayerController::PostProcessInput(const float DeltaTime, const bool bGamePaused)
 {
 	if (UCardAbilitySystemComponent* Asc = GetAbilitySystemComponent())
@@ -378,7 +438,6 @@ UCardAbilitySystemComponent* AMannequinPlayerController::GetAbilitySystemCompone
 	const AMannequinPlayerState* MannequinPlayerState = CastChecked<AMannequinPlayerState>(PlayerState, ECastCheckedType::NullAllowed);
 	return MannequinPlayerState ? MannequinPlayerState->GetAsc() : nullptr;
 }
-
 
 void AMannequinPlayerController::SetHUDTime()
 {

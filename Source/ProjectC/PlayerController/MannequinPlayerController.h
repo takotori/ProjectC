@@ -16,15 +16,36 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Lyra|PlayerController")
 	UCardAbilitySystemComponent* GetAbilitySystemComponent() const;
 
+	UFUNCTION(BlueprintCallable)
+	void UpdateHUD(FGameplayAttribute Attribute,float OldValue, float NewValue);
 
+	UFUNCTION(BlueprintCallable)
+	void HealthChanged(float OldHealth, float NewHealth);
+
+	UFUNCTION(BlueprintCallable)
+	void MaxHealthChanged(float OldMaxHealth, float NewMaxHealth);
+
+	UFUNCTION(BlueprintCallable)
+	void ShieldChanged(float OldShield, float NewShield);
+
+	UFUNCTION(BlueprintCallable)
+	void MaxShieldChanged(float OldMaxShield, float NewMaxShield);
+
+	UFUNCTION(BlueprintCallable)
+	void AmmoChanged(int32 OldAmmo, int NewAmmo);
+
+	UFUNCTION(BlueprintCallable)
+	void MagazineChanged(float OldMagazine, float NewMagazine);
+
+	
 	void SetHUDHealth(float Health, float MaxHealth);
 	void SetHUDShield(float Shield, float MaxShield);
 	void SetHUDScore(float Score);
 	void SetHUDRedTeamScore(int32 RedScore);
 	void SetHUDBlueTeamScore(int32 BlueScore);
-
 	void SetHUDDefeats(int32 Defeats);
 	void SetHUDAmmo(int32 Ammo);
+	
 	void SetHUDMatchCountdown(float CountdownTime);
 	void SetHUDAnnouncementCountdown(float CountdownTime);
 	void SetHUDGrenades(int32 Grenades);
