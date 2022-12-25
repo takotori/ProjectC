@@ -29,15 +29,7 @@ void AMannequinPlayerState::BeginPlay()
 	{
 		CharacterAttributeSet = AbilitySystemComponent->GetSet<UCharacterAttributes>();
 		WeaponAttributeSet = AbilitySystemComponent->GetSet<UWeaponAttributes>();
-		// AmmoChangedDelegateHandle = AbilitySystemComponent->
-		//                             GetGameplayAttributeValueChangeDelegate(AttributeSet->GetHealthAttribute()).
-		//                             AddUObject(this, &AMannequinPlayerState::AmmoChanged);
 	}
-}
-
-void AMannequinPlayerState::AmmoChanged(const FOnAttributeChangeData& Data)
-{
-	UE_LOG(LogTemp, Warning, TEXT("asdlfjk"))
 }
 
 void AMannequinPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

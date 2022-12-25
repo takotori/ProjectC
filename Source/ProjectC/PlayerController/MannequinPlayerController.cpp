@@ -561,17 +561,17 @@ void AMannequinPlayerController::SetHUDDefeats(int32 Defeats)
 
 void AMannequinPlayerController::SetHUDAmmo(int32 Ammo)
 {
-	MannequinHUD = MannequinHUD == nullptr ? Cast<AMannequinHUD>(GetHUD()) : MannequinHUD;
-	if (MannequinHUD && MannequinHUD->CharacterOverlay && MannequinHUD->CharacterOverlay->AmmoAmount)
-	{
-		const FString AmmoText = FString::Printf(TEXT("%d"), Ammo);
-		MannequinHUD->CharacterOverlay->AmmoAmount->SetText(FText::FromString(AmmoText));
-	}
-	else
-	{
-		bInitializeAmmo = true;
-		HUDWeaponAmmo = Ammo;
-	}
+	// MannequinHUD = MannequinHUD == nullptr ? Cast<AMannequinHUD>(GetHUD()) : MannequinHUD;
+	// if (MannequinHUD && MannequinHUD->CharacterOverlay && MannequinHUD->CharacterOverlay->AmmoAmount)
+	// {
+	// 	const FString AmmoText = FString::Printf(TEXT("%d"), Ammo);
+	// 	MannequinHUD->CharacterOverlay->AmmoAmount->SetText(FText::FromString(AmmoText));
+	// }
+	// else
+	// {
+	// 	bInitializeAmmo = true;
+	// 	HUDWeaponAmmo = Ammo;
+	// }
 }
 
 void AMannequinPlayerController::SetHUDMatchCountdown(float CountdownTime)

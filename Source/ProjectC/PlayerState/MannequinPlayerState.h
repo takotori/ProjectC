@@ -3,7 +3,6 @@
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
 #include "GameFramework/PlayerState.h"
-#include "ProjectC/Abilities/AsyncTaskAttributeChanged.h"
 #include "ProjectC/Types/Team.h"
 #include "MannequinPlayerState.generated.h"
 
@@ -34,9 +33,6 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-	
-	FDelegateHandle AmmoChangedDelegateHandle;
-	virtual void AmmoChanged(const FOnAttributeChangeData& Data);
 
 private:
 	UPROPERTY()

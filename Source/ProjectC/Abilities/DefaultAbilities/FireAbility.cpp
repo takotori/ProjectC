@@ -12,7 +12,6 @@
 
 UFireAbility::UFireAbility()
 {
-	AbilityInputID = EGSAbilityInputID::Fire;
 }
 
 void UFireAbility::StartRangedWeaponTargeting()
@@ -84,6 +83,15 @@ void UFireAbility::UseAbility(const FGameplayAbilityTargetDataHandle& TargetData
 
 	// this is an instant ability, end it immediately (only replicate if bIsServer)
 	// EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, bIsServer, false);
+}
+
+bool UFireAbility::HasEnoughAmmo()
+{
+	if (const UAbilitySystemComponent* AbilitySystemComponent = GetAbilitySystemComponent(); AmmoAttribute.IsValid())
+	{
+		return AbilitySystemComponent->GetNumericAttribute(AmmoAttribute) > 0.f;
+	}
+	return false;
 }
 
 void UFireAbility::SpawnProjectile(const FHitResult* HitResult)

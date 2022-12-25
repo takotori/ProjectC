@@ -42,6 +42,9 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void UseAbility(const FGameplayAbilityTargetDataHandle& TargetDataHandle, FGameplayTag ApplicationTag);
 
+	UFUNCTION(BlueprintCallable)
+	bool HasEnoughAmmo();
+
 	void PerformLocalTargeting(TArray<FHitResult>& OutHits);
 	FVector GetWeaponTargetingSourceLocation();
 	FTransform GetTargetingTransform(const APawn* SourcePawn);
@@ -59,4 +62,7 @@ protected:
 private:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class AProjectile> ProjectileClass;
+
+	UPROPERTY(EditAnywhere)
+	FGameplayAttribute AmmoAttribute;
 };
