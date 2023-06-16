@@ -84,6 +84,10 @@ FProjectileSpawnTransform UFireAbility::UseAbility(const FGameplayAbilityTargetD
 
 FProjectileSpawnTransform UFireAbility::GetProjectileSpawnTransform(const FHitResult* HitResult, const FGameplayAbilityTargetDataHandle& TargetDataHandle)
 {
+	/*
+	 * BUG: Crashes if player manages to kill himself xD
+	 *      Weapon instance of the dying player is deleted upon kill, but referenced by the players fire ability
+	 */
 	const USkeletalMeshComponent* SkeletalMeshComponent = GetWeaponInstance()->GetWeaponMesh();
 	if (!SkeletalMeshComponent) return FProjectileSpawnTransform{};
 
