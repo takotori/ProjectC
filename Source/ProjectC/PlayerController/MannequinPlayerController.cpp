@@ -365,11 +365,10 @@ void AMannequinPlayerController::PollInit()
 	}
 }
 
-void AMannequinPlayerController::UpdateHUD(FGameplayAttribute Attribute,float OldValue, float NewValue)
+void AMannequinPlayerController::UpdateHUD(FGameplayAttribute Attribute, float OldValue, float NewValue)
 {
 	if (Attribute.IsValid())
 	{
-			
 	}
 	UE_LOG(LogTemp, Warning, TEXT("asdöfj"))
 }
@@ -383,7 +382,9 @@ void AMannequinPlayerController::HealthChanged(float OldHealth, float NewHealth)
 	{
 		const float HealthPercent = NewHealth / MannequinPlayerState->CharacterAttributeSet->GetMaxHealth();
 		MannequinHUD->CharacterOverlay->HealthBar->SetPercent(HealthPercent);
-		const FString HealthText =FString::Printf(TEXT("%d/%d"), FMath::CeilToInt(NewHealth), FMath::CeilToInt(MannequinPlayerState->CharacterAttributeSet->GetMaxHealth()));
+		const FString HealthText = FString::Printf(TEXT("%d/%d"), FMath::CeilToInt(NewHealth),
+		                                           FMath::CeilToInt(
+			                                           MannequinPlayerState->CharacterAttributeSet->GetMaxHealth()));
 		MannequinHUD->CharacterOverlay->HealthText->SetText(FText::FromString(HealthText));
 	}
 }
@@ -401,7 +402,9 @@ void AMannequinPlayerController::ShieldChanged(float OldShield, float NewShield)
 	{
 		const float ShieldPercent = NewShield / MannequinPlayerState->CharacterAttributeSet->GetMaxShield();
 		MannequinHUD->CharacterOverlay->HealthBar->SetPercent(ShieldPercent);
-		const FString ShieldText =FString::Printf(TEXT("%d/%d"), FMath::CeilToInt(NewShield), FMath::CeilToInt(MannequinPlayerState->CharacterAttributeSet->GetMaxShield()));
+		const FString ShieldText = FString::Printf(TEXT("%d/%d"), FMath::CeilToInt(NewShield),
+		                                           FMath::CeilToInt(
+			                                           MannequinPlayerState->CharacterAttributeSet->GetMaxShield()));
 		MannequinHUD->CharacterOverlay->HealthText->SetText(FText::FromString(ShieldText));
 	}
 }
@@ -435,7 +438,7 @@ void AMannequinPlayerController::PostProcessInput(const float DeltaTime, const b
 
 UCardAbilitySystemComponent* AMannequinPlayerController::GetAbilitySystemComponent() const
 {
-	const AMannequinPlayerState* MannequinPlayerState = CastChecked<AMannequinPlayerState>(PlayerState, ECastCheckedType::NullAllowed);
+	const AMannequinPlayerState* MannequinPlayerState = Cast<AMannequinPlayerState>(PlayerState);
 	return MannequinPlayerState ? MannequinPlayerState->GetAsc() : nullptr;
 }
 
