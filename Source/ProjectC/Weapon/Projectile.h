@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "ProjectC/Abilities/FGameplayAbilityTargetData_STH.h"
 #include "Projectile.generated.h"
 
 UCLASS()
@@ -18,7 +19,6 @@ public:
 	bool bUseServerSideRewind = false;
 
 	FVector_NetQuantize TraceStart;
-
 	FVector_NetQuantize100 InitialVelocity;
 
 	UPROPERTY(EditAnywhere)
@@ -31,6 +31,9 @@ public:
 	// Doesn't matter for grenade and rockets
 	UPROPERTY(EditAnywhere)
 	float HeadShotDamage = 40.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn="true"))
+	FGameplayEffectSpecHandle GameplayEffectSpec;
 
 protected:
 	virtual void BeginPlay() override;
@@ -72,10 +75,10 @@ protected:
 	
 private:
 	UPROPERTY(EditAnywhere)
-	class UParticleSystem* Tracer;
+	UParticleSystem* Tracer;
 
 	UPROPERTY()
-	class UParticleSystemComponent* TracerComponent;
+	UParticleSystemComponent* TracerComponent;
 
 	FTimerHandle DestroyTimer;
 

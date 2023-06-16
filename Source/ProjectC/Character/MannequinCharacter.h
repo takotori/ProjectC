@@ -2,11 +2,11 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
+#include "GameplayEffect.h"
 #include "GameplayTagContainer.h"
 #include "InputActionValue.h"
 #include "Components/TimelineComponent.h"
 #include "GameFramework/Character.h"
-#include "ProjectC/ProjectC.h"
 #include "ProjectC/GameMode/MatchGameMode.h"
 #include "ProjectC/Interfaces/InteractWithCrosshairsInterface.h"
 #include "ProjectC/Types/CombatState.h"

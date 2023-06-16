@@ -27,6 +27,21 @@ struct FRangedWeaponFiringInput
 	}
 };
 
+USTRUCT(BlueprintType)
+struct FProjectileSpawnTransform
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadWrite)
+	FVector SocketTransform;
+
+	UPROPERTY(BlueprintReadWrite)
+	FRotator TargetRotation;
+
+	UPROPERTY(BlueprintReadWrite)
+	APawn* InstigatorPawn;
+};
+
 UCLASS()
 class PROJECTC_API UFireAbility : public UBaseAbilityClientToServer
 {
@@ -40,7 +55,7 @@ protected:
 	void StartRangedWeaponTargeting();
 
 	UFUNCTION(BlueprintCallable)
-	void UseAbility(const FGameplayAbilityTargetDataHandle& TargetDataHandle, FGameplayTag ApplicationTag);
+	FProjectileSpawnTransform UseAbility(const FGameplayAbilityTargetDataHandle& TargetDataHandle, FGameplayTag ApplicationTag);
 
 	UFUNCTION(BlueprintCallable)
 	bool HasEnoughAmmo();
@@ -57,10 +72,10 @@ protected:
 	static int32 FindFirstPawnHitResult(const TArray<FHitResult>& HitResults);
 	virtual void AddAdditionalTraceIgnoreActors(FCollisionQueryParams& TraceParams) const;
 
-	void SpawnProjectile(const FHitResult* HitResult);
+	FProjectileSpawnTransform GetProjectileSpawnTransform(const FHitResult* HitResult, const FGameplayAbilityTargetDataHandle& TargetDataHandle);
 
 private:
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(AllowPrivateAccess))
 	TSubclassOf<class AProjectile> ProjectileClass;
 
 	UPROPERTY(EditAnywhere)

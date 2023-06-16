@@ -43,8 +43,11 @@ void AProjectileBullet::BeginPlay()
 void AProjectileBullet::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
                               FVector NormalImpulse, const FHitResult& Hit)
 {
-	if (const AMannequinCharacter* OwnerCharacter = Cast<AMannequinCharacter>(GetOwner()))
+	UE_LOG(LogTemp, Warning, TEXT("bullet hit smt"))
+	const AMannequinCharacter* OwnerCharacter = Cast<AMannequinCharacter>(GetOwner());
+	if (OwnerCharacter)
 	{
+		
 		if (AMannequinPlayerController* OwnerController = Cast<AMannequinPlayerController>(OwnerCharacter->Controller))
 		{
 			if (OwnerCharacter->HasAuthority() && !bUseServerSideRewind)

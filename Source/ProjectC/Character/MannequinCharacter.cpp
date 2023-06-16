@@ -3,6 +3,7 @@
 #include "AbilitySystemComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "TimerManager.h"
 #include "Camera/CameraComponent.h"
 #include "Components/BoxComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -11,9 +12,9 @@
 #include "Input/CharacterInputComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Materials/MaterialInstanceDynamic.h"
 #include "Net/UnrealNetwork.h"
 #include "ProjectC/ProjectC.h"
-#include "ProjectC/Abilities/BaseAbility.h"
 #include "ProjectC/Abilities/AttributeSets/CharacterAttributes.h"
 #include "ProjectC/Components//BuffComponent.h"
 #include "ProjectC/Components/CardAbilitySystemComponent.h"
@@ -339,7 +340,7 @@ void AMannequinCharacter::ElimTimerFinished()
 		OnLeftGame.Broadcast();
 	}
 }
-
+	
 void AMannequinCharacter::ServerLeaveGame_Implementation()
 {
 	MatchGameMode = MatchGameMode == nullptr ? GetWorld()->GetAuthGameMode<AMatchGameMode>() : MatchGameMode;

@@ -24,7 +24,7 @@ public:
 	void AddToDefeats(int32 DefeatsAmount);
 
 	UPROPERTY()
-	const UCharacterAttributes* CharacterAttributeSet;
+	const class UCharacterAttributes* CharacterAttributeSet;
 
 	UPROPERTY()
 	const class UWeaponAttributes* WeaponAttributeSet;

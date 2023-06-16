@@ -1,13 +1,11 @@
 #include "FireAbility.h"
 
+#include <map>
+
 #include "AbilitySystemComponent.h"
 #include "Engine/SkeletalMeshSocket.h"
-#include "Kismet/GameplayStatics.h"
-#include "ProjectC/Abilities/BaseGameplayTags.h"
 #include "ProjectC/Abilities/FGameplayAbilityTargetData_STH.h"
-#include "ProjectC/Character/MannequinCharacter.h"
 #include "ProjectC/Components/CombatComponent.h"
-#include "ProjectC/Weapon/Projectile.h"
 #include "ProjectC/Weapon/Weapon.h"
 
 UFireAbility::UFireAbility()
@@ -50,16 +48,15 @@ void UFireAbility::StartRangedWeaponTargeting()
 	NotifyTargetDataReady(TargetData, FGameplayTag());
 }
 
-void UFireAbility::UseAbility(const FGameplayAbilityTargetDataHandle& TargetDataHandle, FGameplayTag ApplicationTag)
+FProjectileSpawnTransform UFireAbility::UseAbility(const FGameplayAbilityTargetDataHandle& TargetDataHandle, FGameplayTag ApplicationTag)
 {
 	// retrieve data
 	const FGameplayAbilityTargetData* TargetData = TargetDataHandle.Get(0);
-
 	if (!TargetData)
 	{
 		// client sent us bad data
 		CancelAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true);
-		return;
+		return FProjectileSpawnTransform{};
 	}
 
 	// decode data
@@ -76,7 +73,7 @@ void UFireAbility::UseAbility(const FGameplayAbilityTargetDataHandle& TargetData
 		// }
 	}
 
-	SpawnProjectile(HitResult);
+	return GetProjectileSpawnTransform(HitResult, TargetDataHandle);
 	//////////////////////////////////////////////////////////////////////
 	// Client & Server both -- data is valid, activate the ability with it
 	//////////////////////////////////////////////////////////////////////
@@ -85,24 +82,13 @@ void UFireAbility::UseAbility(const FGameplayAbilityTargetDataHandle& TargetData
 	// EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, bIsServer, false);
 }
 
-bool UFireAbility::HasEnoughAmmo()
-{
-	if (const UAbilitySystemComponent* AbilitySystemComponent = GetAbilitySystemComponent(); AmmoAttribute.IsValid())
-	{
-		return AbilitySystemComponent->GetNumericAttribute(AmmoAttribute) > 0.f;
-	}
-	return false;
-}
-
-void UFireAbility::SpawnProjectile(const FHitResult* HitResult)
+FProjectileSpawnTransform UFireAbility::GetProjectileSpawnTransform(const FHitResult* HitResult, const FGameplayAbilityTargetDataHandle& TargetDataHandle)
 {
 	const USkeletalMeshComponent* SkeletalMeshComponent = GetWeaponInstance()->GetWeaponMesh();
-	if (!SkeletalMeshComponent) return;
-
-	// float Damage = Cast<UWeaponAttributes>(GetWeaponInstance()->DefaultAttributeEffect)->GetDamage();
+	if (!SkeletalMeshComponent) return FProjectileSpawnTransform{};
 
 	const USkeletalMeshSocket* MuzzleFlashSocket = SkeletalMeshComponent->GetSocketByName(FName("MuzzleFlash"));
-	UWorld* World = GetWorld();
+	const UWorld* World = GetWorld();
 	if (MuzzleFlashSocket && World)
 	{
 		const FTransform SocketTransform = MuzzleFlashSocket->GetSocketTransform(SkeletalMeshComponent);
@@ -115,31 +101,23 @@ void UFireAbility::SpawnProjectile(const FHitResult* HitResult)
 		SpawnParams.Instigator = InstigatorPawn;
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 		
-		DrawDebugLine(GetWorld(), SocketTransform.GetLocation(), HitResult->ImpactPoint, FColor::Red, false, 3.f, 0, 3.f);
-		// DrawDebugLine(GetWorld(), HitResult->TraceStart, HitResult->TraceEnd, FColor::Blue, false, 3.f, 0, 3.f);
-		// DrawDebugLine(GetWorld(), HitResult, ToTarget, FColor::Red, false, 3.f, 0, 3.f);
-		
-		AProjectile* SpawnedProjectile = World->SpawnActor<AProjectile>(
-			ProjectileClass,
-			SocketTransform.GetLocation(),
-			TargetRotation,
-			SpawnParams
-		);
+		return {SocketTransform.GetLocation(), TargetRotation, InstigatorPawn};
 	}
+	return FProjectileSpawnTransform{};
 }
 
 void UFireAbility::PerformLocalTargeting(TArray<FHitResult>& OutHits)
 {
-	const APawn* const AvatarPawn = Cast<APawn>(GetAvatarActorFromActorInfo());
+	const APawn* AvatarPawn = Cast<APawn>(GetAvatarActorFromActorInfo());
 	if (AvatarPawn && AvatarPawn->IsLocallyControlled())
 	{
 		FRangedWeaponFiringInput InputData;
-
+		
 		const FTransform TargetTransform = GetTargetingTransform(AvatarPawn);
 		InputData.AimDir = TargetTransform.GetUnitAxis(EAxis::X);
 		InputData.StartTrace = TargetTransform.GetTranslation();
 		InputData.EndAim = InputData.StartTrace + InputData.AimDir * TRACE_LENGTH;
-
+		
 		TraceBullets(InputData, OutHits);
 	}
 }
@@ -283,4 +261,13 @@ FVector UFireAbility::GetWeaponTargetingSourceLocation()
 	const FVector TargetingSourceLocation = SourceLoc;
 
 	return TargetingSourceLocation;
+}
+
+bool UFireAbility::HasEnoughAmmo()
+{
+	if (const UAbilitySystemComponent* AbilitySystemComponent = GetAbilitySystemComponent(); AmmoAttribute.IsValid())
+	{
+		return AbilitySystemComponent->GetNumericAttribute(AmmoAttribute) > 0.f;
+	}
+	return false;
 }

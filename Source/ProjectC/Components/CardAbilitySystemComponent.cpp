@@ -127,6 +127,12 @@ void UCardAbilitySystemComponent::ClearAbilityInput()
 	InputHeldSpecHandles.Reset();
 }
 
+//void UCardAbilitySystemComponent::OnActiveGameplayEffectAddedCallback(UAbilitySystemComponent* Target,
+//	const FGameplayEffectSpec& SpecApplied, FActiveGameplayEffectHandle ActiveHandle)
+//{
+//	
+//}
+
 void UCardAbilitySystemComponent::AbilitySpecInputReleased(FGameplayAbilitySpec& Spec)
 {
 	Super::AbilitySpecInputReleased(Spec);

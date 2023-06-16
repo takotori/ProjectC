@@ -6,7 +6,7 @@
 #include "GameFramework/GameMode.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
-#include "ProjectC/Abilities/BaseGameplayTags.h"
+#include "ProjectC/Abilities/AttributeSets/CharacterAttributes.h"
 #include "ProjectC/Character/MannequinCharacter.h"
 #include "ProjectC/Components/CardAbilitySystemComponent.h"
 #include "ProjectC/Components/CombatComponent.h"
@@ -127,7 +127,7 @@ void AMannequinPlayerController::HandleMatchHasStarted(bool bTeamsMatch)
 	if (MannequinHUD)
 	{
 		if (MannequinHUD->CharacterOverlay == nullptr) MannequinHUD->AddCharacterOverlay();
-		if (MannequinHUD->CardPicker == nullptr) MannequinHUD->AddCardPicker();
+		// if (MannequinHUD->CardPicker == nullptr) MannequinHUD->AddCardPicker();
 
 		if (MannequinHUD->Announcement)
 		{
@@ -377,7 +377,7 @@ void AMannequinPlayerController::UpdateHUD(FGameplayAttribute Attribute,float Ol
 void AMannequinPlayerController::HealthChanged(float OldHealth, float NewHealth)
 {
 	MannequinHUD = MannequinHUD == nullptr ? Cast<AMannequinHUD>(GetHUD()) : MannequinHUD;
-	AMannequinPlayerState* MannequinPlayerState = GetPlayerState<AMannequinPlayerState>();
+	const AMannequinPlayerState* MannequinPlayerState = GetPlayerState<AMannequinPlayerState>();
 	if (MannequinHUD && MannequinHUD->CharacterOverlay && MannequinHUD->CharacterOverlay->HealthBar && MannequinHUD->
 		CharacterOverlay->HealthText && MannequinPlayerState && MannequinPlayerState->CharacterAttributeSet)
 	{
@@ -395,7 +395,7 @@ void AMannequinPlayerController::MaxHealthChanged(float OldMaxHealth, float NewM
 void AMannequinPlayerController::ShieldChanged(float OldShield, float NewShield)
 {
 	MannequinHUD = MannequinHUD == nullptr ? Cast<AMannequinHUD>(GetHUD()) : MannequinHUD;
-	AMannequinPlayerState* MannequinPlayerState = GetPlayerState<AMannequinPlayerState>();
+	const AMannequinPlayerState* MannequinPlayerState = GetPlayerState<AMannequinPlayerState>();
 	if (MannequinHUD && MannequinHUD->CharacterOverlay && MannequinHUD->CharacterOverlay->HealthBar && MannequinHUD->
 		CharacterOverlay->HealthText && MannequinPlayerState && MannequinPlayerState->CharacterAttributeSet)
 	{
